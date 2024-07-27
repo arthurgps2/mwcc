@@ -81,12 +81,13 @@ function SetPlayerCharacters()
         ply:SetPlayerColor(modelColor)
 
         -- Model bodygroups
+        local skin = char.pm.bodygroups.Skin
+        if skin == nil then skin = 0 end
+        ply:SetSkin(skin)
+
         for bname, bvalue in pairs(char.pm.bodygroups) do
-            if bname == "Skin" then
-                ply:SetSkin(bvalue)
-            else
-                ply:SetBodygroup(ply:FindBodygroupByName(bname), bvalue)
-            end
+            if bname == "Skin" then continue end
+            ply:SetBodygroup(ply:FindBodygroupByName(bname), bvalue)
         end
 
         -- Name
