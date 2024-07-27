@@ -24,18 +24,21 @@ characters[1] = {
     pm = {
         model = "combine"   -- because it already comes with GMod
     },
+    name = "Combine",
     sex = "male"
 }
 characters[2] = {
     pm = {
         model = "corpse"
     },
+    name = "Burnt Corpse",
     sex = "male"
 }
 characters[3] = {
     pm = {
         model = "alyx"
     },
+    name = "Alyx",
     sex = "female"
 }
 
@@ -56,6 +59,9 @@ function SetPlayerCharacters()
         local modelPath = player_manager.TranslatePlayerModel(char.pm.model)
         util.PrecacheModel(modelPath)
         ply:SetModel(modelPath)
+
+        -- Name
+        ply:SetBystanderName(char.name)
 
         -- Sex
         ply.ModelSex = char.sex
