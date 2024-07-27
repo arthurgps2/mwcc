@@ -22,21 +22,24 @@ local characters = {}
 -- TODO for testing, remove later and some code for importing data from files
 characters[1] = {
     pm = {
-        model = "combine"   -- because it already comes with GMod
+        model = "chell",   -- because it already comes with GMod
+        color = Vector(0, 0, 0)
     },
-    name = "Combine",
+    name = "Chell",
     sex = "male"
 }
 characters[2] = {
     pm = {
-        model = "corpse"
+        model = "corpse",
+        color = "random",
     },
-    name = "Burnt Corpse",
+    name = "Hothead",
     sex = "male"
 }
 characters[3] = {
     pm = {
-        model = "alyx"
+        model = "alyx",
+        color = "random",
     },
     name = "Alyx",
     sex = "female"
@@ -59,6 +62,13 @@ function SetPlayerCharacters()
         local modelPath = player_manager.TranslatePlayerModel(char.pm.model)
         util.PrecacheModel(modelPath)
         ply:SetModel(modelPath)
+
+        -- Model color
+        local modelColor = char.pm.color
+        if modelColor == "random" then 
+            modelColor = Vector(math.Rand(0,1), math.Rand(0,1), math.Rand(0,1)) 
+        end
+        ply:SetPlayerColor(modelColor)
 
         -- Name
         ply:SetBystanderName(char.name)
