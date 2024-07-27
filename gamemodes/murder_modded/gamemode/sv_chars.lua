@@ -22,26 +22,36 @@ local characters = {}
 -- TODO for testing, remove later and some code for importing data from files
 characters[1] = {
     pm = {
-        model = "chell",   -- because it already comes with GMod
-        color = Vector(0, 0, 0)
+        model = "Mimi (Mini-Sentry Girl)",
+        color = Vector(0, 0, 0),
+        bodygroups = {
+            Skin = 8,
+            Team = 1
+        }
     },
-    name = "Chell",
-    sex = "male"
+    name = "Mimi",
+    sex = "female"
 }
 characters[2] = {
     pm = {
-        model = "corpse",
+        model = "Niko (Sasamin)",
         color = "random",
+        bodygroups = {
+            ["MLG Glasses"] = 1
+        }
     },
-    name = "Hothead",
+    name = "Niko",
     sex = "male"
 }
 characters[3] = {
     pm = {
-        model = "alyx",
+        model = "Red Shygal",
         color = "random",
+        bodygroups = {
+            Hair = 1
+        }
     },
-    name = "Alyx",
+    name = "Shygal",
     sex = "female"
 }
 
@@ -69,6 +79,15 @@ function SetPlayerCharacters()
             modelColor = Vector(math.Rand(0,1), math.Rand(0,1), math.Rand(0,1)) 
         end
         ply:SetPlayerColor(modelColor)
+
+        -- Model bodygroups
+        for bname, bvalue in pairs(char.pm.bodygroups) do
+            if bname == "Skin" then
+                ply:SetSkin(bvalue)
+            else
+                ply:SetBodygroup(ply:FindBodygroupByName(bname), bvalue)
+            end
+        end
 
         -- Name
         ply:SetBystanderName(char.name)
