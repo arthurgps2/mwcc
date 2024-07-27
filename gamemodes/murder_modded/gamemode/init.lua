@@ -33,6 +33,7 @@ include("sv_bystandername.lua")
 include("sv_adminpanel.lua")
 include("sv_tker.lua")
 include("sv_flashlight.lua")
+include("sv_chars.lua")
 
 resource.AddFile("materials/thieves/footprint.vmt")
 resource.AddFile("materials/murder/melon_logo_scoreboard.png")

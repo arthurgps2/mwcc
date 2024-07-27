@@ -313,6 +313,7 @@ function GM:StartNewRound()
 	if IsValid(murderer) then
 		murderer:SetMurderer(true)
 	end
+
 	for k, ply in pairs(players) do
 		if ply != murderer then
 			ply:SetMurderer(false)
@@ -334,6 +335,10 @@ function GM:StartNewRound()
 		ply:CalculateSpeed()
 		ply:GenerateBystanderName()
 	end
+
+	-- Set all players' custom characters
+	SetPlayerCharacters()
+	
 	local noobs = table.Copy(players)
 	table.RemoveByValue(noobs, murderer)
 	local magnum = table.Random(noobs)
