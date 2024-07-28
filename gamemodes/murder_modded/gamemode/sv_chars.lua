@@ -57,6 +57,18 @@ characters[3] = {
     nameColor = Vector(1, 0, 0),
     sex = "female"
 }
+characters[1] = {
+    pm = {
+        model = "Sonic the Hedgehog - Lanolin the Sheep",
+        color = "random",
+        bodygroups = {
+            Gloves = 1
+        }
+    },
+    name = "Lanolin",
+    nameColor = Vector(.9, .9, .9),
+    sex = "female"
+}
 
 function SetPlayerCharacters()
     -- Shuffle so if there are not enough custom chars for everyone in the server, 
@@ -88,6 +100,10 @@ function SetPlayerCharacters()
         local skin = char.pm.bodygroups.Skin
         if skin == nil then skin = 0 end
         ply:SetSkin(skin)
+
+        for i = 0, ply:GetNumBodyGroups()-1 do
+            ply:SetBodygroup(i, 0)
+        end
 
         for bname, bvalue in pairs(char.pm.bodygroups) do
             if bname == "Skin" then continue end
