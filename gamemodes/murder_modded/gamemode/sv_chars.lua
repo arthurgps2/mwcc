@@ -30,6 +30,7 @@ characters[1] = {
         }
     },
     name = "Mimi",
+    nameColor = Vector(.4, .4, 1),
     sex = "female"
 }
 characters[2] = {
@@ -41,6 +42,7 @@ characters[2] = {
         }
     },
     name = "Niko",
+    nameColor = Vector(.5, .2, 1),
     sex = "male"
 }
 characters[3] = {
@@ -52,6 +54,7 @@ characters[3] = {
         }
     },
     name = "Shygal",
+    nameColor = Vector(1, 0, 0),
     sex = "female"
 }
 
@@ -92,6 +95,9 @@ function SetPlayerCharacters()
 
         -- Name
         ply:SetBystanderName(char.name)
+
+        -- Name color
+        ply:SetNameColor(char.nameColor)
 
         -- Sex
         ply.ModelSex = char.sex

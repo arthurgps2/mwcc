@@ -22,6 +22,7 @@ function GM:PlayerInitialSpawn( ply )
 
 	local vec = Vector(0.5, 0.5, 0.5)
 	ply:SetPlayerColor(vec)
+	ply:SetNameColor(vec)
 end
 
 function GM:PlayerSpawn( ply )
@@ -236,7 +237,7 @@ function GM:PlayerDeath(ply, Inflictor, attacker )
 				end
 			elseif attacker != ply then
 				if self.ShowBystanderTKs:GetBool() then
-					local col = attacker:GetPlayerColor()
+					local col = attacker:GetNameColor()
 					local msgs = Translator:AdvVarTranslate(translate.killedTeamKill, {
 						player = {text = attacker:Nick() .. ", " .. attacker:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
 					})
@@ -249,7 +250,7 @@ function GM:PlayerDeath(ply, Inflictor, attacker )
 		end
 	else
 		if attacker != ply && IsValid(attacker) && attacker:IsPlayer() then
-			local col = attacker:GetPlayerColor()
+			local col = attacker:GetNameColor()
 			local msgs = Translator:AdvVarTranslate(translate.killedMurderer, {
 				player = {text = attacker:Nick() .. ", " .. attacker:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
 			})
@@ -288,6 +289,15 @@ end
 function EntityMeta:SetPlayerColor(vec)
 	self.playerColor = vec
 	self:SetNWVector("playerColor", vec)
+end
+
+-- Name color getter/setter
+function EntityMeta:GetNameColor()
+	return self:GetNWVector("nameColor") or Vector()
+end
+
+function EntityMeta:SetNameColor(vec)
+	self:SetNWVector("nameColor", vec)
 end
 
 function GM:PlayerFootstep(ply, pos, foot, sound, volume, filter)
@@ -447,7 +457,7 @@ end
 function GM:PlayerSay( ply, text, team)
 	if ply:Team() == 2 && ply:Alive() && self:GetRound() != 0 then
 		local ct = ChatText()
-		local col = ply:GetPlayerColor()
+		local col = ply:GetNameColor()
 		ct:Add(ply:GetBystanderName(), Color(col.x * 255, col.y * 255, col.z * 255))
 		ct:Add(": " .. text, color_white)
 		for k, ply2 in pairs(player.GetAll()) do
@@ -496,6 +506,7 @@ local function pressedUse(self, ply)
 	-- disguise as ragdolls
 	if IsValid(tr.Entity) && tr.Entity:GetClass() == "prop_ragdoll" && tr.HitPos:Distance(tr.StartPos) < 80 then
 		if ply:GetMurderer() && ply:GetLootCollected() >= 1 then
+			-- TODO check murderer disguise system
 			if tr.Entity:GetBystanderName() != ply:GetBystanderName() || tr.Entity:GetPlayerColor() != ply:GetPlayerColor() then 
 				ply:MurdererDisguise(tr.Entity)
 				ply:SetLootCollected(ply:GetLootCollected() - 1)
@@ -532,6 +543,7 @@ function GM:KeyPress(ply, key)
 	end
 end
 
+-- TODO check murderer disguise system
 function PlayerMeta:MurdererDisguise(copyent)
 	if !self.Disguised then
 		self.DisguiseColor = self:GetPlayerColor()
@@ -547,6 +559,7 @@ function PlayerMeta:MurdererDisguise(copyent)
 	end
 end
 
+-- TODO check murderer disguise system
 function PlayerMeta:UnMurdererDisguise()
 	if self.Disguised then
 		self:SetPlayerColor(self.DisguiseColor)

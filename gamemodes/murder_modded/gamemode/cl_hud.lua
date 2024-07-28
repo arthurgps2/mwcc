@@ -252,7 +252,7 @@ function GM:DrawGameHUD(ply)
 		end
 		if IsValid(self.LastLooked) && self.LookedFade + 2 > CurTime() then
 			local name = self.LastLooked:GetBystanderName() or "error"
-			local col = self.LastLooked:GetPlayerColor() or Vector()
+			local col = self.LastLooked:GetNameColor() or Vector()
 			col = Color(col.x * 255, col.y * 255, col.z * 255)
 			col.a = (1 - (CurTime() - self.LookedFade) / 2) * 255
 			drawTextShadow(name, "MersRadial", ScrW() / 2, ScrH() / 2 + 80, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -263,6 +263,7 @@ function GM:DrawGameHUD(ply)
 	if shouldDraw != false then
 		if self:GetAmMurderer() && self.LootCollected && self.LootCollected >= 1 then
 			if IsValid(tr.Entity) && tr.Entity:GetClass() == "prop_ragdoll" && tr.HitPos:Distance(tr.StartPos) < 80 then
+				-- TODO check murderer disguise system
 				if tr.Entity:GetBystanderName() != ply:GetBystanderName() || colorDif(tr.Entity:GetPlayerColor(), ply:GetPlayerColor()) > 0.1 then 
 					local h = draw.GetFontHeight("MersRadial")
 					drawTextShadow(translate.pressEToDisguiseFor1Loot, "MersRadialSmall", ScrW() / 2, ScrH() / 2 + 80 + h * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -283,7 +284,7 @@ function GM:DrawGameHUD(ply)
 
 		// draw health circle
 		surface.SetTexture(tex)
-		local col = ply:GetPlayerColor()
+		local col = ply:GetNameColor()
 		col = Color(col.x * 255, col.y * 255, col.z * 255)
 		surface.SetDrawColor(col)
 		local hsize = math.Clamp(health, 0, 100) / 100 * size

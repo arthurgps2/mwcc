@@ -1,3 +1,4 @@
+-- TODO what does this script do
 local PANEL = {}
 local PlayerVoicePanels = {}
 
