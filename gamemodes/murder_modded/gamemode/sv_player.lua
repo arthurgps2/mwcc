@@ -112,6 +112,28 @@ function GM:PlayerSetModel( ply )
 
 end
 
+-- Set player hands on model change
+function GM:PlayerSetHandsModel(ply, hands) 
+    -- Get info from the hands model
+    local simplemodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
+    local info = player_manager.TranslatePlayerHands(simplemodel)
+
+    -- Set hands model and skin
+    hands:SetModel(info.model)
+    hands:SetSkin(ply:GetSkin())
+
+    -- Get the corresponding bodygroup's value from the playermodel based on its name.
+    -- If they are different, there's nothing I can really do.
+    local handsBgs = hands:GetBodyGroups()
+    for k, handsBg in pairs(handsBgs) do
+        local modelBgId = ply:FindBodygroupByName(handsBg.name)
+        if modelBgId != -1 then
+            local value = ply:GetBodygroup(modelBgId)
+            hands:SetBodygroup(handsBg.id, value)
+        end
+    end
+end
+
 function GM:DoPlayerDeath( ply, attacker, dmginfo )
 
 	for k, weapon in pairs(ply:GetWeapons()) do

@@ -66,7 +66,6 @@ function SetPlayerCharacters()
     table.Shuffle(players)
     table.Shuffle(chars)
     
-    print("n: "..#players)
     for k, ply in ipairs(players) do
         -- Keep default model for this player
         if k > #characters then break end
@@ -94,6 +93,9 @@ function SetPlayerCharacters()
             if bname == "Skin" then continue end
             ply:SetBodygroup(ply:FindBodygroupByName(bname), bvalue)
         end
+
+        -- Model hands
+        ply:SetupHands()
 
         -- Name
         ply:SetBystanderName(char.name)
