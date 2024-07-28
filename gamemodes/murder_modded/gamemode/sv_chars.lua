@@ -62,14 +62,16 @@ function SetPlayerCharacters()
     -- Shuffle so if there are not enough custom chars for everyone in the server, 
     -- at least everyone gets to play as one eventually
     local players = player:GetAll()
+    local chars = table.Copy(characters)
     table.Shuffle(players)
+    table.Shuffle(chars)
     
     print("n: "..#players)
     for k, ply in ipairs(players) do
         -- Keep default model for this player
         if k > #characters then break end
 
-        local char = characters[k]
+        local char = chars[k]
 
         -- Model
         local modelPath = player_manager.TranslatePlayerModel(char.pm.model)
