@@ -153,6 +153,48 @@ concommand.Add("mwcc_save_chars", function(ply, cmd, args)
     return SaveFile(args[1])
 end)
 
+-- Command for printing characters
+concommand.Add("mwcc_print_chars", function(ply, cmd, args)
+    -- Check permission
+    if ply != NULL and !ply:IsAdmin() then
+        print("mwcc_load_chars: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
+
+    -- Set tables
+    local printTable = {{"INDEX", "NAME", "NAME COLOR", "PLAYERMODEL", "PM COLOR", "SEX"}}
+    local columnWidths = {0, 0, 0, 0, 0, 0}
+    local function upd()
+        for i,v in ipairs(columnWidths) do
+            columnWidths[i] = math.max(v, string.len(printTable[#printTable][i]))
+        end
+    end
+    upd()
+
+    -- Add content to print table and update column widths
+    for i, c in ipairs(characters) do
+        local name      = c.name
+        local nameColor = string.sub(c.nameColor.x, 1, 4).." "..string.sub(c.nameColor.y, 1, 4).." "..string.sub(c.nameColor.z, 1, 4)
+        local pm        = c.pm.model
+        local pmColor   = string.sub(c.pm.color.x, 1, 4).." "..string.sub(c.pm.color.y, 1, 4).." "..string.sub(c.pm.color.z, 1, 4)
+        local sex       = c.sex
+        table.insert(printTable, {i, name, nameColor, pm, pmColor, sex})
+        upd()
+    end
+
+    -- Print content from table
+    for i,v in ipairs(printTable) do
+        local output = ""
+        for j,w in ipairs(v) do
+            output = output..w..string.rep(" ", columnWidths[j] - string.len(w))
+            if j != #v then output = output.." | " end
+        end
+        print(output)
+    end
+
+    return 0    -- means success
+end)
+
 -- Load default file on start
 -- TODO idk if it's just me, but it seems as if sometimes the file isn't loaded when the gamemode is initialized.
 hook.Add("Initialize", "InitializeChars", function()
