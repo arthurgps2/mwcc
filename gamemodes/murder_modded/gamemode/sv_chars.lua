@@ -22,7 +22,7 @@ local characters = {}
 -- Load file and store contents in the characters table
 local function LoadFile(f)
     -- Check if file exists
-    local filename = "mwcc/charconfigs/"..f..".chars"
+    local filename = "mwcc/charconfigs/"..f..".json"
     if !file.Exists(filename, "DATA") then 
         print("mwcc_load_chars: Could not find file "..filename.."!")
         return 2    -- means "file not found"
@@ -125,6 +125,32 @@ concommand.Add("mwcc_load_chars", function(ply, cmd, args)
     end
 
     return LoadFile(args[1])
+end)
+
+-- Save file
+local function SaveFile(f)
+    local json = util.TableToJSON(characters)
+    local filename = "mwcc/charconfigs/"..f..".json"
+
+    if string.find(filename, ":") then
+        print("mwcc_save_chars: Invalid character \":\" found in filename "..filename.."!")
+        return 2    -- means invalid character found
+    end
+
+    file.Write(filename, json)
+    print("mwcc_save_chars: Successfully saved configs to "..filename.."!")
+    return 0    -- means success
+end
+
+-- Command for saving files
+concommand.Add("mwcc_save_chars", function(ply, cmd, args)
+    -- Check permission
+    if ply != NULL and !ply:IsAdmin() then
+        print("mwcc_load_chars: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
+
+    return SaveFile(args[1])
 end)
 
 -- Load default file on start
