@@ -19,66 +19,10 @@
 -- Stores all our custom characters' data
 local characters = {}
 
--- TODO for testing, remove later and some code for importing data from files
-characters[1] = {
-    pm = {
-        model = "Mimi (Mini-Sentry Girl)",
-        color = Vector(0, 0, 0),
-        bodygroups = {
-            Skin = 8,
-            Team = 1
-        }
-    },
-    name = "Mimi",
-    nameColor = Vector(.4, .4, 1),
-    sex = "female"
-}
-characters[2] = {
-    pm = {
-        model = "Niko (Sasamin)",
-        color = "random",
-        bodygroups = {
-            ["MLG Glasses"] = 1
-        }
-    },
-    name = "Niko",
-    nameColor = Vector(.5, .2, 1),
-    sex = "male"
-}
-characters[3] = {
-    pm = {
-        model = "Red Shygal",
-        color = "random",
-        bodygroups = {
-            Hair = 1
-        }
-    },
-    name = "Shygal",
-    nameColor = Vector(1, 0, 0),
-    sex = "female"
-}
-characters[1] = {
-    pm = {
-        model = "Sonic the Hedgehog - Lanolin the Sheep",
-        color = "random",
-        bodygroups = {
-            Gloves = 1
-        }
-    },
-    name = "Lanolin",
-    nameColor = Vector(.9, .9, .9),
-    sex = "female"
-}
-
-concommand.Add("mwcc_load_chars", function(ply, cmd, args)
-    -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_load_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
-
+-- Load file and store contents in the characters table
+local function LoadFile(f)
     -- Check if file exists
-    local filename = "mwcc/charconfigs/"..args[1]..".chars"
+    local filename = "mwcc/charconfigs/"..f..".chars"
     if !file.Exists(filename, "DATA") then 
         print("mwcc_load_chars: Could not find file "..filename.."!")
         return 2    -- means "file not found"
@@ -168,8 +112,25 @@ concommand.Add("mwcc_load_chars", function(ply, cmd, args)
 
     -- Set characters table
     characters = jsonTable
-    print("mwcc_load_chars: Loaded character configs successfully!")
+    print("mwcc_load_chars: Loaded "..filename.." successfully!")
     return 0    -- means "success"
+end
+
+-- Command for loading character files
+concommand.Add("mwcc_load_chars", function(ply, cmd, args)
+    -- Check permission
+    if ply != NULL and !ply:IsAdmin() then
+        print("mwcc_load_chars: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
+
+    return LoadFile(args[1])
+end)
+
+-- Load default file on start
+-- TODO idk if it's just me, but it seems as if sometimes the file isn't loaded when the gamemode is initialized.
+hook.Add("Initialize", "InitializeChars", function()
+    LoadFile("default")
 end)
 
 function SetPlayerCharacters()
