@@ -174,10 +174,17 @@ concommand.Add("mwcc_print_chars", function(ply, cmd, args)
     -- Add content to print table and update column widths
     for i, c in ipairs(characters) do
         local name      = c.name
-        local nameColor = string.sub(c.nameColor.x, 1, 4).." "..string.sub(c.nameColor.y, 1, 4).." "..string.sub(c.nameColor.z, 1, 4)
         local pm        = c.pm.model
-        local pmColor   = string.sub(c.pm.color.x, 1, 4).." "..string.sub(c.pm.color.y, 1, 4).." "..string.sub(c.pm.color.z, 1, 4)
         local sex       = c.sex
+
+        local nameColor
+        if isvector(c.nameColor) then nameColor = string.sub(c.nameColor.x, 1, 4).." "..string.sub(c.nameColor.y, 1, 4).." "..string.sub(c.nameColor.z, 1, 4)
+        else nameColor = c.nameColor end
+        
+        local pmColor
+        if isvector(c.pm.color) then pmColor = string.sub(c.pm.color.x, 1, 4).." "..string.sub(c.pm.color.y, 1, 4).." "..string.sub(c.pm.color.z, 1, 4)
+        else pmColor = c.pm.color end
+
         table.insert(printTable, {i, name, nameColor, pm, pmColor, sex})
         upd()
     end
@@ -203,6 +210,7 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
         return 1    -- means "no permission"
     end
 
+    -- Get char from identifier
     local index
     local char
 
@@ -224,22 +232,38 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
         char = characters[index]
     end
 
+    -- Char not found
     if char == nil then
         print("mwcc_char_info: Could not find specified character!")
         return 3    -- means "not found"
     end
 
+    -- Print info
     print("INDEX: "..index)
     print("NAME: "..char.name)
-    print("NAME COLOR: "..string.sub(char.nameColor.x, 1, 4).." "..string.sub(char.nameColor.y, 1, 4).." "..string.sub(char.nameColor.z, 1, 4))
+
+    if isvector(char.nameColor) then
+        print("NAME COLOR: "..string.sub(char.nameColor.x, 1, 4).." "..string.sub(char.nameColor.y, 1, 4).." "..string.sub(char.nameColor.z, 1, 4))
+    else
+        print("NAME COLOR: "..char.nameColor)
+    end
+
     print("PLAYERMODEL: "..char.pm.model)
-    print("PM COLOR: "..string.sub(char.pm.color.x, 1, 4).." "..string.sub(char.pm.color.y, 1, 4).." "..string.sub(char.pm.color.z, 1, 4))
+
+    if isvector(char.pm.color) then
+       print("PM COLOR: "..string.sub(char.pm.color.x, 1, 4).." "..string.sub(char.pm.color.y, 1, 4).." "..string.sub(char.pm.color.z, 1, 4))
+    else
+        print("PM COLOR: "..char.pm.color)
+    end
+
     print("SEX: "..char.sex)
 
     print("BODYGROUPS ("..#char.pm.bodygroups.."):")
     for k,v in pairs(char.pm.bodygroups) do
         print("- "..k..": "..v)
     end
+
+    return 0
 end)
 
 -- Load default file on start
