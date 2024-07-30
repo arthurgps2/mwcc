@@ -146,7 +146,7 @@ end
 concommand.Add("mwcc_save_chars", function(ply, cmd, args)
     -- Check permission
     if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_load_chars: Only admins can run this command!")
+        print("mwcc_save_chars: Only admins can run this command!")
         return 1    -- means "no permission"
     end
 
@@ -157,7 +157,7 @@ end)
 concommand.Add("mwcc_print_chars", function(ply, cmd, args)
     -- Check permission
     if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_load_chars: Only admins can run this command!")
+        print("mwcc_print_chars: Only admins can run this command!")
         return 1    -- means "no permission"
     end
 
@@ -193,6 +193,53 @@ concommand.Add("mwcc_print_chars", function(ply, cmd, args)
     end
 
     return 0    -- means success
+end)
+
+-- Command for printing specific character info
+concommand.Add("mwcc_char_info", function(ply, cmd, args)
+    -- Check permission
+    if ply != NULL and !ply:IsAdmin() then
+        print("mwcc_char_info: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
+
+    local index
+    local char
+
+    if !args[2] or (args[1] != "-byname" and args[1] != "-byindex") then
+        print("mwcc_char_info: Must include an identifier, either with \"-byname [name]\" or \"-byindex [index]\"!") 
+        return 2    -- means "no identifier"
+    end
+
+    if args[1] == "-byname" then
+        for i,v in pairs(characters) do
+            if string.lower(v.name) == string.lower(args[2]) then
+                index = i
+                char = v
+                break
+            end
+        end
+    elseif args[1] == "-byindex" then
+        index = tonumber(args[2])
+        char = characters[index]
+    end
+
+    if char == nil then
+        print("mwcc_char_info: Could not find specified character!")
+        return 3    -- means "not found"
+    end
+
+    print("INDEX: "..index)
+    print("NAME: "..char.name)
+    print("NAME COLOR: "..string.sub(char.nameColor.x, 1, 4).." "..string.sub(char.nameColor.y, 1, 4).." "..string.sub(char.nameColor.z, 1, 4))
+    print("PLAYERMODEL: "..char.pm.model)
+    print("PM COLOR: "..string.sub(char.pm.color.x, 1, 4).." "..string.sub(char.pm.color.y, 1, 4).." "..string.sub(char.pm.color.z, 1, 4))
+    print("SEX: "..char.sex)
+
+    print("BODYGROUPS ("..#char.pm.bodygroups.."):")
+    for k,v in pairs(char.pm.bodygroups) do
+        print("- "..k..": "..v)
+    end
 end)
 
 -- Load default file on start
