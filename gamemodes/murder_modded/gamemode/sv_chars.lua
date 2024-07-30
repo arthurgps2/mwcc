@@ -214,6 +214,7 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
     local index
     local char
 
+    -- Check
     if !args[2] or (args[1] != "-byname" and args[1] != "-byindex") then
         print("mwcc_char_info: Must include an identifier, either with \"-byname [name]\" or \"-byindex [index]\"!") 
         return 2    -- means "no identifier"
@@ -264,6 +265,149 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
     end
 
     return 0
+end)
+
+-- Command for editing character info
+concommand.Add("mwcc_char_edit", function(ply, cmd, args)
+    -- Check permission
+    if ply != NULL and !ply:IsAdmin() then
+        print("mwcc_char_edit: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
+
+    local index
+    local char
+
+    -- Find char by identifier
+    if !args[2] or (args[1] != "-byname" and args[1] != "-byindex") then
+        print("mwcc_char_edit: Must include an identifier, either with \"-byname [name]\" or \"-byindex [index]\"!") 
+        return 2    -- means "no identifier"
+    end
+
+    if args[1] == "-byname" then
+        for i,v in pairs(characters) do
+            if string.lower(v.name) == string.lower(args[2]) then
+                index = i
+                char = v
+                break
+            end
+        end
+    elseif args[1] == "-byindex" then
+        index = tonumber(args[2])
+        char = characters[index]
+    end
+
+    -- Char not found
+    if char == nil then
+        print("mwcc_char_edit: Could not find specified character!")
+        return 3    -- means "not found"
+    end
+
+    -- Make a copy of the character to overwrite the original with
+    char = table.Copy(char)
+
+    -- Quick func for throwing an error for invalid command
+    local function throwInvalid()
+        print("mwcc_char_edit: Invalid command format!")
+        return 4    -- means "invalid format"
+    end
+
+    -- Loop through the rest of command looking for varnames and its values to change to
+    local i = 3
+    while i <= #args do
+        local varname = args[i]
+        if varname == "-name" then
+            char.name = args[i+1]
+            i = i+1
+        elseif varname == "-namecolor" then
+            local r = args[i+1]
+            if r == "random" then
+                char.nameColor = r
+                i = i+1
+            else
+                r = tonumber(r)
+                local g = tonumber(args[i+2])
+                local b = tonumber(args[i+3])
+
+                if !r or !g or !b then
+                    return throwInvalid()
+                end
+
+                r = math.Clamp(r, 0, 1)
+                g = math.Clamp(g, 0, 1)
+                b = math.Clamp(b, 0, 1)
+
+                char.nameColor = Vector(r, g, b)
+                i = i+3
+            end
+        elseif varname == "-sex" then
+            char.sex = args[i+1]
+            i = i+1
+        elseif varname == "-pm" then
+            char.pm.model = args[i+1]
+            i = i+1
+        elseif varname == "-pm-color" then
+            local r = args[i+1]
+            if r == "random" then
+                char.pm.color = r
+                i = i+1
+            else
+                r = tonumber(r)
+                local g = tonumber(args[i+2])
+                local b = tonumber(args[i+3])
+
+                if !r or !g or !b then
+                    return throwInvalid()
+                end
+
+                r = math.Clamp(r, 0, 1)
+                g = math.Clamp(g, 0, 1)
+                b = math.Clamp(b, 0, 1)
+
+                char.pm.color = Vector(r, g, b)
+                i = i+3
+            end
+        elseif varname == "-pm-body" then
+            for j = i+1, #args, 2 do
+                local bgName = string.lower(args[j])
+                local bgValue = tonumber(args[j+1])
+
+                local bgNameFirstChar = string.sub(bgName, 1, 1)
+
+                if bgNameFirstChar == "-" then
+                    i = j-1
+                    break
+                elseif tonumber(bgNameFirstChar) or !bgValue then
+                    return throwInvalid()
+                end
+
+                -- Look for the correct-cased bgName in case there's any difference in letter case
+                for bgk, bgv in pairs(char.pm.bodygroups) do
+                    if string.lower(bgk) == bgName then
+                        bgName = bgk
+                        break
+                    end
+                end
+
+                -- Set bodygroup
+                char.pm.bodygroups[bgName] = bgValue
+
+                -- Finished reading whole command
+                if j+1 == #args  then
+                    i = j+1
+                    break
+                end
+            end
+        else
+            -- Expected any of these varnames, got none of them. Invalid format
+            return throwInvalid()
+        end
+
+        i = i+1
+    end
+
+    characters[index] = char
+    print("mwcc_char_edit: Changed character info for "..char.name.." successfully!")
 end)
 
 -- Load default file on start
