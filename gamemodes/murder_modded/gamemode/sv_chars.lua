@@ -202,6 +202,19 @@ concommand.Add("mwcc_print_chars", function(ply, cmd, args)
     return 0    -- means success
 end)
 
+local function findCharacterByName(n)
+    for i,v in pairs(characters) do
+        if string.lower(v.name) == string.lower(n) then
+            return i, v
+        end
+    end
+end
+
+local function findCharacterByIndex(i)
+    i = tonumber(i)
+    return i, characters[i]
+end
+
 -- Command for printing specific character info
 concommand.Add("mwcc_char_info", function(ply, cmd, args)
     -- Check permission
@@ -214,23 +227,24 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
     local index
     local char
 
-    -- Check
-    if !args[2] or (args[1] != "-byname" and args[1] != "-byindex") then
-        print("mwcc_char_info: Must include an identifier, either with \"-byname [name]\" or \"-byindex [index]\"!") 
-        return 2    -- means "no identifier"
-    end
+    -- Look for -byname or -byindex tags and act accordingly
+    if args[1] then
+        if args[1] == "-byname" then
+            index, char = findCharacterByName(args[2])
+        elseif args[1] == "-byindex" then
+            index, char = findCharacterByIndex(args[2])
 
-    if args[1] == "-byname" then
-        for i,v in pairs(characters) do
-            if string.lower(v.name) == string.lower(args[2]) then
-                index = i
-                char = v
-                break
-            end
+        -- None of these tags found. If arg is a number, assume it's the index
+        elseif tonumber(args[1]) then
+            index, char = findCharacterByIndex(args[1])
+        
+        -- Not a number either, so it must be the name
+        else
+            index, char = findCharacterByName(args[1])
         end
-    elseif args[1] == "-byindex" then
-        index = tonumber(args[2])
-        char = characters[index]
+    else
+        print("mwcc_char_info: Must include either the name or the index of the character!")
+        return 2    -- means "could not find identifier"
     end
 
     -- Char not found
@@ -277,24 +291,32 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
 
     local index
     local char
+    local start
 
-    -- Find char by identifier
-    if !args[2] or (args[1] != "-byname" and args[1] != "-byindex") then
-        print("mwcc_char_edit: Must include an identifier, either with \"-byname [name]\" or \"-byindex [index]\"!") 
-        return 2    -- means "no identifier"
-    end
+    -- Look for -byname or -byindex tags and act accordingly
+    if args[1] then
+        if args[1] == "-byname" then
+            index, char = findCharacterByName(args[2])
+            start = 3
+        elseif args[1] == "-byindex" then
+            index, char = findCharacterByIndex(args[2])
+            start = 3
 
-    if args[1] == "-byname" then
-        for i,v in pairs(characters) do
-            if string.lower(v.name) == string.lower(args[2]) then
-                index = i
-                char = v
-                break
+        -- None of these tags found.
+        else
+            start = 2
+            -- If arg is a number, assume it's the index
+            if tonumber(args[1]) then
+                index, char = findCharacterByIndex(args[1])
+            
+            -- Not a number either, so it must be the name
+            else
+                index, char = findCharacterByName(args[1])
             end
         end
-    elseif args[1] == "-byindex" then
-        index = tonumber(args[2])
-        char = characters[index]
+    else
+        print("mwcc_char_info: Must include either the name or the index of the character!")
+        return 2    -- means "could not find identifier"
     end
 
     -- Char not found
@@ -313,7 +335,7 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
     end
 
     -- Loop through the rest of command looking for varnames and its values to change to
-    local i = 3
+    local i = start
     while i <= #args do
         local varname = args[i]
         if varname == "-name" then
