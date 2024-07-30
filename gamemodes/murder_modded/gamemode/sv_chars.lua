@@ -334,6 +334,11 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
         return 4    -- means "invalid format"
     end
 
+    -- Check if there's actually anything after the identifier
+    if !args[start] then
+        return throwInvalid()
+    end
+
     -- Loop through the rest of command looking for varnames and its values to change to
     local i = start
     while i <= #args do
