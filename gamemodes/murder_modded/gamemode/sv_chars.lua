@@ -106,8 +106,8 @@ local function LoadFile(f)
     end
 
     if invalid then
-        print("mwcc_load_chars: Invalid content structure inside "..filename.."!")
-        return 3    -- means "invalid content structure"
+        print("mwcc_load_chars: Failed to load file "..filename.."!")
+        return 3    -- means "failed to load file"
     end
 
     -- Set characters table
@@ -124,6 +124,10 @@ concommand.Add("mwcc_load_chars", function(ply, cmd, args)
         return 1    -- means "no permission"
     end
 
+    if !args[1] then
+        print("mwcc_load_chars: No file passed!")
+        return 3    -- means "failed to load file"
+    end
     return LoadFile(args[1])
 end)
 
