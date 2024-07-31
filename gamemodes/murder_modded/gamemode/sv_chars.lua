@@ -20,6 +20,10 @@ end
 
 -- Save file
 function SaveCharsFile(f)
+    -- Make sure save directory exists
+    if !file.IsDir("mwcc", "DATA") then             file.CreateDir("mwcc") end
+    if !file.IsDir("mwcc/charconfigs", "DATA") then file.CreateDir("mwcc/charconfigs") end
+
     local json = util.TableToJSON(characters)
     local filename = "mwcc/charconfigs/"..f..".json"
 
