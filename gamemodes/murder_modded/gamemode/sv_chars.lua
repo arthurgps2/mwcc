@@ -136,6 +136,16 @@ end
 
 -- Load default file on start
 hook.Add("Initialize", "InitializeChars", function()
+    -- If default file does not exist, load it from data_static and save it
+    if !file.Exists("mwcc/charconfigs/default.json", "DATA") then
+        -- "what if somethings wrong with the file!!!"
+        -- well if it doesnt it means the user messed with the files and fucked it up, thats not my problem
+        print("Default char file not found, creating new one...")
+        local content = file.Read("data_static/mwcc/default_chars.json", "GAME")
+        characters = util.JSONToTable(content)
+        SaveCharsFile("default")
+    end
+
     LoadCharsFile("default")
 end)
 

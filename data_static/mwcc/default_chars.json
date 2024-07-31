@@ -1,0 +1,145 @@
+[
+    {
+        "pm" : {
+            "model" : "alyx",
+            "color" : "[.4 .4 .3]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Alyx",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "female"
+    },
+    {
+        "pm" : {
+            "model" : "barney",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Barney",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "breen",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Dr. Breen",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "chell",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Chell",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "female"
+    },
+    {
+        "pm" : {
+            "model" : "combine",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Combine",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "corpse",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Hothead",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "eli",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Eli",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "gman",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "G-Man",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "kleiner",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Dr. Kleiner",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "monk",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Grigori",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "mossman",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Judith",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "female"
+    },
+    {
+        "pm" : {
+            "model" : "odessa",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Odessa",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    },
+    {
+        "pm" : {
+            "model" : "skeleton",
+            "color" : "[.5 .5 .5]",
+            "bodygroups" : {
+            }
+        },
+        "name" : "Skeleton",
+        "nameColor" : "[.5 .5 .5]",
+        "sex" : "male"
+    }
+]
