@@ -297,3 +297,23 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
     SetCustomChar(index, char)
     print("mwcc_char_edit: Changed character info for "..char.name.." successfully!")
 end)
+
+-- Command for deleting characters
+concommand.Add("mwcc_char_delete", function(ply, cmd, args)
+    -- Check permission
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+
+    -- Get char from identifier
+    local r, index, char = findCharacterFromArgs(args)
+    if r == 2 then 
+        print("mwcc_char_delete: Must include either the name or the index of the character!")
+        return r
+    elseif r == 3 then
+        print("mwcc_char_delete: Could not find specified character!")
+        return r
+    end
+
+    -- Delete character
+    DeleteCustomChar(index)
+    print("mwcc_char_delete: Character "..char.name.." deleted successfully!")
+end)
