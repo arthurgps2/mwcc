@@ -91,16 +91,9 @@ local function findCharacterByIndex(i)
     return i, characters[i]
 end
 
--- Command for printing specific character info
-concommand.Add("mwcc_char_info", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+local function findCharacterFromArgs(args)
+    local index, char
 
-    -- Get char from identifier
-    local index
-    local char
-
-    -- Look for -byname or -byindex tags and act accordingly
     if args[1] then
         if args[1] == "-byname" then
             index, char = findCharacterByName(args[2])
@@ -116,14 +109,30 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
             index, char = findCharacterByName(args[1])
         end
     else
-        print("mwcc_char_info: Must include either the name or the index of the character!")
         return 2    -- means "could not find identifier"
     end
 
     -- Char not found
     if char == nil then
-        print("mwcc_char_info: Could not find specified character!")
         return 3    -- means "not found"
+    end
+
+    return 0, index, char
+end
+
+-- Command for printing specific character info
+concommand.Add("mwcc_char_info", function(ply, cmd, args)
+    -- Check permission
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+
+    -- Get char from identifier
+    local r, index, char = findCharacterFromArgs(args)
+    if r == 2 then 
+        print("mwcc_char_info: Must include either the name or the index of the character!")
+        return r
+    elseif r == 3 then
+        print("mwcc_char_info: Could not find specified character!")
+        return r
     end
 
     -- Print info
@@ -159,40 +168,22 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
     -- Check permission
     if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
 
-    local index
-    local char
-    local start
-
-    -- Look for -byname or -byindex tags and act accordingly
-    if args[1] then
-        if args[1] == "-byname" then
-            index, char = findCharacterByName(args[2])
-            start = 3
-        elseif args[1] == "-byindex" then
-            index, char = findCharacterByIndex(args[2])
-            start = 3
-
-        -- None of these tags found.
-        else
-            start = 2
-            -- If arg is a number, assume it's the index
-            if tonumber(args[1]) then
-                index, char = findCharacterByIndex(args[1])
-            
-            -- Not a number either, so it must be the name
-            else
-                index, char = findCharacterByName(args[1])
-            end
-        end
-    else
-        print("mwcc_char_info: Must include either the name or the index of the character!")
-        return 2    -- means "could not find identifier"
+    -- Get char from identifier
+    local r, index, char = findCharacterFromArgs(args)
+    if r == 2 then 
+        print("mwcc_char_edit: Must include either the name or the index of the character!")
+        return r
+    elseif r == 3 then
+        print("mwcc_char_edit: Could not find specified character!")
+        return r
     end
 
-    -- Char not found
-    if char == nil then
-        print("mwcc_char_edit: Could not find specified character!")
-        return 3    -- means "not found"
+    -- Set loop start position
+    local start
+    if args[1] == "-byname" or args[1] == "-byindex" then
+        start = 3
+    else
+        start = 2
     end
 
     -- Make a copy of the character to overwrite the original with
