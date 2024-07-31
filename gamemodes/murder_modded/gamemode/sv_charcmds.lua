@@ -1,10 +1,16 @@
+-- Helper function for checking if player is admin
+local function checkAdmin(ply)
+    if ply != NULL and !ply:IsAdmin() then
+        print("mwcc_save_chars: Only admins can run this command!")
+        return false
+    end
+    return true
+end
+
 -- Command for saving files
 concommand.Add("mwcc_save_chars", function(ply, cmd, args)
     -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_save_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
 
     return SaveCharsFile(args[1])
 end)
@@ -12,10 +18,7 @@ end)
 -- Command for loading character files
 concommand.Add("mwcc_load_chars", function(ply, cmd, args)
     -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_load_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
 
     if !args[1] then
         print("mwcc_load_chars: No file passed!")
@@ -28,10 +31,7 @@ end)
 -- Command for printing characters
 concommand.Add("mwcc_print_chars", function(ply, cmd, args)
     -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_print_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
 
     -- Set tables
     local printTable = {{"INDEX", "NAME", "NAME COLOR", "PLAYERMODEL", "PM COLOR", "SEX"}}
@@ -94,10 +94,7 @@ end
 -- Command for printing specific character info
 concommand.Add("mwcc_char_info", function(ply, cmd, args)
     -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_char_info: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
 
     -- Get char from identifier
     local index
@@ -160,10 +157,7 @@ end)
 -- Command for editing character info
 concommand.Add("mwcc_char_edit", function(ply, cmd, args)
     -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_char_edit: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
+    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
 
     local index
     local char
