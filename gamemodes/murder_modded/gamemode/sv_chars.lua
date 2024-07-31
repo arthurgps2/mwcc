@@ -1,26 +1,40 @@
--- This is how each item in this table should look like in the future
-
--- {
---     pm = {
---         model = "yourModelNameHere",
---         color = Vector(0, 0, 0),
---         bodygroups = {
---             Your = 0,
---             Bodygroup = 1,
---             Configs = 2,
---             Here = 4,
---         }
---     },
---     name = "Your Character Name Here",
---     nameColor = Vector(0, 0, 0),
---     sex = "male/female"
--- }
-
 -- Stores all our custom characters' data
 local characters = {}
 
--- Load file and store contents in the characters table
-local function LoadFile(f)
+-- Getter, setter, adder, remover, urmommer etc.
+function GetCustomChars()
+    return characters
+end
+
+function SetCustomChar(index, char)
+    characters[index] = char
+end
+
+function AddCustomChar(char)
+    table.insert(characters, char)
+end
+
+function DeleteCustomChar(index)
+    table.remove(characters, index)
+end
+
+-- Save file
+function SaveCharsFile(f)
+    local json = util.TableToJSON(characters)
+    local filename = "mwcc/charconfigs/"..f..".json"
+
+    if string.find(filename, ":") then
+        print("mwcc_save_chars: Invalid character \":\" found in filename "..filename.."!")
+        return 2    -- means invalid character found
+    end
+
+    file.Write(filename, json)
+    print("mwcc_save_chars: Successfully saved configs to "..filename.."!")
+    return 0    -- means success
+end
+
+-- Load file
+function LoadCharsFile(f)
     -- Check if file exists
     local filename = "mwcc/charconfigs/"..f..".json"
     if !file.Exists(filename, "DATA") then 
@@ -116,337 +130,12 @@ local function LoadFile(f)
     return 0    -- means "success"
 end
 
--- Command for loading character files
-concommand.Add("mwcc_load_chars", function(ply, cmd, args)
-    -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_load_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
-
-    if !args[1] then
-        print("mwcc_load_chars: No file passed!")
-        return 3    -- means "failed to load file"
-    end
-    return LoadFile(args[1])
-end)
-
--- Save file
-local function SaveFile(f)
-    local json = util.TableToJSON(characters)
-    local filename = "mwcc/charconfigs/"..f..".json"
-
-    if string.find(filename, ":") then
-        print("mwcc_save_chars: Invalid character \":\" found in filename "..filename.."!")
-        return 2    -- means invalid character found
-    end
-
-    file.Write(filename, json)
-    print("mwcc_save_chars: Successfully saved configs to "..filename.."!")
-    return 0    -- means success
-end
-
--- Command for saving files
-concommand.Add("mwcc_save_chars", function(ply, cmd, args)
-    -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_save_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
-
-    return SaveFile(args[1])
-end)
-
--- Command for printing characters
-concommand.Add("mwcc_print_chars", function(ply, cmd, args)
-    -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_print_chars: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
-
-    -- Set tables
-    local printTable = {{"INDEX", "NAME", "NAME COLOR", "PLAYERMODEL", "PM COLOR", "SEX"}}
-    local columnWidths = {0, 0, 0, 0, 0, 0}
-    local function upd()
-        for i,v in ipairs(columnWidths) do
-            columnWidths[i] = math.max(v, string.len(printTable[#printTable][i]))
-        end
-    end
-    upd()
-
-    -- Add content to print table and update column widths
-    for i, c in ipairs(characters) do
-        local name      = c.name
-        local pm        = c.pm.model
-        local sex       = c.sex
-
-        local nameColor
-        if isvector(c.nameColor) then nameColor = string.sub(c.nameColor.x, 1, 4).." "..string.sub(c.nameColor.y, 1, 4).." "..string.sub(c.nameColor.z, 1, 4)
-        else nameColor = c.nameColor end
-        
-        local pmColor
-        if isvector(c.pm.color) then pmColor = string.sub(c.pm.color.x, 1, 4).." "..string.sub(c.pm.color.y, 1, 4).." "..string.sub(c.pm.color.z, 1, 4)
-        else pmColor = c.pm.color end
-
-        table.insert(printTable, {i, name, nameColor, pm, pmColor, sex})
-        upd()
-    end
-
-    -- Print content from table
-    for i,v in ipairs(printTable) do
-        local output = ""
-        for j,w in ipairs(v) do
-            output = output..w..string.rep(" ", columnWidths[j] - string.len(w))
-            if j != #v then output = output.." | " end
-        end
-        print(output)
-    end
-
-    return 0    -- means success
-end)
-
-local function findCharacterByName(n)
-    for i,v in pairs(characters) do
-        if string.lower(v.name) == string.lower(n) then
-            return i, v
-        end
-    end
-end
-
-local function findCharacterByIndex(i)
-    i = tonumber(i)
-    return i, characters[i]
-end
-
--- Command for printing specific character info
-concommand.Add("mwcc_char_info", function(ply, cmd, args)
-    -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_char_info: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
-
-    -- Get char from identifier
-    local index
-    local char
-
-    -- Look for -byname or -byindex tags and act accordingly
-    if args[1] then
-        if args[1] == "-byname" then
-            index, char = findCharacterByName(args[2])
-        elseif args[1] == "-byindex" then
-            index, char = findCharacterByIndex(args[2])
-
-        -- None of these tags found. If arg is a number, assume it's the index
-        elseif tonumber(args[1]) then
-            index, char = findCharacterByIndex(args[1])
-        
-        -- Not a number either, so it must be the name
-        else
-            index, char = findCharacterByName(args[1])
-        end
-    else
-        print("mwcc_char_info: Must include either the name or the index of the character!")
-        return 2    -- means "could not find identifier"
-    end
-
-    -- Char not found
-    if char == nil then
-        print("mwcc_char_info: Could not find specified character!")
-        return 3    -- means "not found"
-    end
-
-    -- Print info
-    print("INDEX: "..index)
-    print("NAME: "..char.name)
-
-    if isvector(char.nameColor) then
-        print("NAME COLOR: "..string.sub(char.nameColor.x, 1, 4).." "..string.sub(char.nameColor.y, 1, 4).." "..string.sub(char.nameColor.z, 1, 4))
-    else
-        print("NAME COLOR: "..char.nameColor)
-    end
-
-    print("PLAYERMODEL: "..char.pm.model)
-
-    if isvector(char.pm.color) then
-       print("PM COLOR: "..string.sub(char.pm.color.x, 1, 4).." "..string.sub(char.pm.color.y, 1, 4).." "..string.sub(char.pm.color.z, 1, 4))
-    else
-        print("PM COLOR: "..char.pm.color)
-    end
-
-    print("SEX: "..char.sex)
-
-    print("BODYGROUPS ("..#char.pm.bodygroups.."):")
-    for k,v in pairs(char.pm.bodygroups) do
-        print("- "..k..": "..v)
-    end
-
-    return 0
-end)
-
--- Command for editing character info
-concommand.Add("mwcc_char_edit", function(ply, cmd, args)
-    -- Check permission
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_char_edit: Only admins can run this command!")
-        return 1    -- means "no permission"
-    end
-
-    local index
-    local char
-    local start
-
-    -- Look for -byname or -byindex tags and act accordingly
-    if args[1] then
-        if args[1] == "-byname" then
-            index, char = findCharacterByName(args[2])
-            start = 3
-        elseif args[1] == "-byindex" then
-            index, char = findCharacterByIndex(args[2])
-            start = 3
-
-        -- None of these tags found.
-        else
-            start = 2
-            -- If arg is a number, assume it's the index
-            if tonumber(args[1]) then
-                index, char = findCharacterByIndex(args[1])
-            
-            -- Not a number either, so it must be the name
-            else
-                index, char = findCharacterByName(args[1])
-            end
-        end
-    else
-        print("mwcc_char_info: Must include either the name or the index of the character!")
-        return 2    -- means "could not find identifier"
-    end
-
-    -- Char not found
-    if char == nil then
-        print("mwcc_char_edit: Could not find specified character!")
-        return 3    -- means "not found"
-    end
-
-    -- Make a copy of the character to overwrite the original with
-    char = table.Copy(char)
-
-    -- Quick func for throwing an error for invalid command
-    local function throwInvalid()
-        print("mwcc_char_edit: Invalid command format!")
-        return 4    -- means "invalid format"
-    end
-
-    -- Check if there's actually anything after the identifier
-    if !args[start] then
-        return throwInvalid()
-    end
-
-    -- Loop through the rest of command looking for varnames and its values to change to
-    local i = start
-    while i <= #args do
-        local varname = args[i]
-        if varname == "-name" then
-            char.name = args[i+1]
-            i = i+1
-        elseif varname == "-namecolor" then
-            local r = args[i+1]
-            if r == "random" then
-                char.nameColor = r
-                i = i+1
-            else
-                r = tonumber(r)
-                local g = tonumber(args[i+2])
-                local b = tonumber(args[i+3])
-
-                if !r or !g or !b then
-                    return throwInvalid()
-                end
-
-                r = math.Clamp(r, 0, 1)
-                g = math.Clamp(g, 0, 1)
-                b = math.Clamp(b, 0, 1)
-
-                char.nameColor = Vector(r, g, b)
-                i = i+3
-            end
-        elseif varname == "-sex" then
-            char.sex = args[i+1]
-            i = i+1
-        elseif varname == "-pm" then
-            char.pm.model = args[i+1]
-            i = i+1
-        elseif varname == "-pm-color" then
-            local r = args[i+1]
-            if r == "random" then
-                char.pm.color = r
-                i = i+1
-            else
-                r = tonumber(r)
-                local g = tonumber(args[i+2])
-                local b = tonumber(args[i+3])
-
-                if !r or !g or !b then
-                    return throwInvalid()
-                end
-
-                r = math.Clamp(r, 0, 1)
-                g = math.Clamp(g, 0, 1)
-                b = math.Clamp(b, 0, 1)
-
-                char.pm.color = Vector(r, g, b)
-                i = i+3
-            end
-        elseif varname == "-pm-body" then
-            for j = i+1, #args, 2 do
-                local bgName = string.lower(args[j])
-                local bgValue = tonumber(args[j+1])
-
-                local bgNameFirstChar = string.sub(bgName, 1, 1)
-
-                if bgNameFirstChar == "-" then
-                    i = j-1
-                    break
-                elseif tonumber(bgNameFirstChar) or !bgValue then
-                    return throwInvalid()
-                end
-
-                -- Look for the correct-cased bgName in case there's any difference in letter case
-                for bgk, bgv in pairs(char.pm.bodygroups) do
-                    if string.lower(bgk) == bgName then
-                        bgName = bgk
-                        break
-                    end
-                end
-
-                -- Set bodygroup
-                char.pm.bodygroups[bgName] = bgValue
-
-                -- Finished reading whole command
-                if j+1 == #args  then
-                    i = j+1
-                    break
-                end
-            end
-        else
-            -- Expected any of these varnames, got none of them. Invalid format
-            return throwInvalid()
-        end
-
-        i = i+1
-    end
-
-    characters[index] = char
-    print("mwcc_char_edit: Changed character info for "..char.name.." successfully!")
-end)
-
 -- Load default file on start
--- TODO idk if it's just me, but it seems as if sometimes the file isn't loaded when the gamemode is initialized.
 hook.Add("Initialize", "InitializeChars", function()
-    LoadFile("default")
+    LoadCharsFile("default")
 end)
 
+-- Set all players' characters from the table
 function SetPlayerCharacters()
     -- Shuffle so if there are not enough custom chars for everyone in the server, 
     -- at least everyone gets to play as one eventually
