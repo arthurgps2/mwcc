@@ -28,13 +28,11 @@ function SaveCharsFile(f)
     local filename = "mwcc/charconfigs/"..f..".json"
 
     if string.find(filename, ":") then
-        print("mwcc_save_chars: Invalid character \":\" found in filename "..filename.."!")
-        return 2    -- means invalid character found
+        return 2, filename    -- means invalid character found
     end
 
     file.Write(filename, json)
-    print("mwcc_save_chars: Successfully saved configs to "..filename.."!")
-    return 0    -- means success
+    return 0, filename    -- means success
 end
 
 -- Load file
@@ -42,8 +40,7 @@ function LoadCharsFile(f)
     -- Check if file exists
     local filename = "mwcc/charconfigs/"..f..".json"
     if !file.Exists(filename, "DATA") then 
-        print("mwcc_load_chars: Could not find file "..filename.."!")
-        return 2    -- means "file not found"
+        return 2, filename    -- means "file not found"
     end
 
     -- Read file content
@@ -51,71 +48,60 @@ function LoadCharsFile(f)
     local jsonTable = util.JSONToTable(json)
 
     -- Check if content structure is valid
-    local invalid = false
+    local errors = {}
     if !istable(jsonTable) then
-        invalid = true
-        print("mwcc_load_chars: Content inside file is not a table!")
+        table.insert(errors, "Content inside file is not a table!")
     else
         for k, v in pairs(jsonTable) do
             -- This must be an array, only numerical keys
             if isstring(k) then
-                invalid = true
-                print("mwcc_load_chars: Table must contain only numerical indexes, found index \""..k.."\"")
+                table.insert(errors, "Table must contain only numerical indexes, found index \""..k.."\"")
                 continue
             end
 
             -- Only tables inside this table
             if !istable(v) then
-                invalid = true
-                print("mwcc_load_chars: Value at index "..k.." is not a table!")
+                table.insert(errors, "Value at index "..k.." is not a table!")
                 continue
             end
 
             -- Name must be a string
             if !isstring(v.name) then
-                invalid = true
-                print("mwcc_load_chars: at index "..k..", \"name\" is not a string!")
+                table.insert(errors, "at index "..k..", \"name\" is not a string!")
             end
 
             -- Sex must be either "male" or "female"
             if v.sex != "male" and v.sex != "female" then
-                invalid = true
-                print("mwcc_load_chars: at index "..k..", \"sex\" must be either \"male\" or \"female\"!")
+                table.insert(errors, "at index "..k..", \"sex\" must be either \"male\" or \"female\"!")
             end
 
             -- Name color must be a vector
             if !isvector(v.nameColor) then
-                invalid = true
-                print("mwcc_load_chars: at index "..k..", \"nameColor\" is not a vector!")
+                table.insert(errors, "at index "..k..", \"nameColor\" is not a vector!")
             end
 
             -- PM must be a table
             if !istable(v.pm) then
-                invalid = true
-                print("mwcc_load_chars: at index "..k..", \"pm\" is not a table!")
+                table.insert(errors, "at index "..k..", \"pm\" is not a table!")
             else
                 -- pm.model must be a string
                 if !isstring(v.pm.model) then
-                    invalid = true
-                    print("mwcc_load_chars: at index "..k..", \"pm.model\" is not a string!")
+                    table.insert(errors, "at index "..k..", \"pm.model\" is not a string!")
                 end
 
                 -- pm.color must be either a vector or "random"
                 if !isvector(v.pm.color) and v.pm.color != "random" then
-                    invalid = true
-                    print("mwcc_load_chars: at index "..k..", \"pm.color\" is neither a vector nor \"random\"!")
+                    table.insert(errors, "at index "..k..", \"pm.color\" is neither a vector nor \"random\"!")
                 end
 
                 -- pm.bodygroups must be a table
                 if !istable(v.pm.bodygroups) then
-                    invalid = true
-                    print("mwcc_load_chars: at index "..k..", \"pm.bodygroups\" is not a table!")
+                    table.insert(errors, "at index "..k..", \"pm.bodygroups\" is not a table!")
                 else
                     -- all keys inside pm.bodygroups must be numbers
                     for k2, v2 in pairs(v.pm.bodygroups) do
                         if !isnumber(v.pm.bodygroups[k2]) then
-                            invalid = true
-                            print("mwcc_load_chars: at index "..k..", \"pm.bodygroups["..k2.."]\" is not a number!")
+                            table.insert(errors, "at index "..k..", \"pm.bodygroups["..k2.."]\" is not a number!")
                         end
                     end
                 end
@@ -123,15 +109,13 @@ function LoadCharsFile(f)
         end
     end
 
-    if invalid then
-        print("mwcc_load_chars: Failed to load file "..filename.."!")
-        return 3    -- means "failed to load file"
+    if #errors > 0 then
+        return 3, filename, errors    -- means "failed to load file"
     end
 
     -- Set characters table
     characters = jsonTable
-    print("mwcc_load_chars: Loaded "..filename.." successfully!")
-    return 0    -- means "success"
+    return 0, filename    -- means "success"
 end
 
 -- Load default file on start

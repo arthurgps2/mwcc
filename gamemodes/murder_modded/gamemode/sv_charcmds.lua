@@ -1,37 +1,72 @@
--- Helper function for checking if player is admin
-local function checkAdmin(ply)
-    if ply != NULL and !ply:IsAdmin() then
-        print("mwcc_save_chars: Only admins can run this command!")
-        return false
+-- Some hack to print command stuff only if -noprint is not present
+local canPrint = true
+local function xprint(str)
+    if canPrint then print(str) end
+end
+
+-- Deals with both -noprint and player admin checks
+local function doCommandChecks(ply, args)
+    if args[#args] == "-noprint" then   
+        canPrint = false
+        table.remove(args, #args)
+    else                                
+        canPrint = true 
     end
-    return true
+
+    return ply == NULL or ply:IsAdmin()
 end
 
 -- Command for saving files
 concommand.Add("mwcc_save_chars", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_save_chars: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
 
-    return SaveCharsFile(args[1])
+    local r, filename = SaveCharsFile(args[1])
+    if r == 0 then
+        xprint("mwcc_save_chars: Successfully saved configs to "..filename.."!")
+    elseif r == 2 then
+        xprint("mwcc_save_chars: Invalid character \":\" found in filename "..filename.."!")
+    end
+
+    return r
 end)
 
 -- Command for loading character files
 concommand.Add("mwcc_load_chars", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_load_chars: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
 
     if !args[1] then
-        print("mwcc_load_chars: No file passed!")
+        xprint("mwcc_load_chars: No file passed!")
         return 3    -- means "failed to load file"
     end
 
-    return LoadCharsFile(args[1])
+    local r, filename, errors = LoadCharsFile(args[1])
+    if r == 0 then
+        xprint("mwcc_load_chars: Loaded "..filename.." successfully!")
+    elseif r == 2 then
+        xprint("mwcc_load_chars: Could not find file "..filename.."!")
+    elseif r == 3 then
+        for i, e in ipairs(errors) do
+            xprint("mwcc_load_chars: "..e)
+        end
+        xprint("mwcc_load_chars: Failed to load file "..filename.."!")
+    end
 end)
 
 -- Command for printing characters
 concommand.Add("mwcc_print_chars", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_print_chars: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
 
     -- Set tables
     local printTable = {{"INDEX", "NAME", "NAME COLOR", "PLAYERMODEL", "PM COLOR", "SEX"}}
@@ -122,16 +157,19 @@ end
 
 -- Command for printing specific character info
 concommand.Add("mwcc_char_info", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_char_info: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
 
     -- Get char from identifier
     local r, index, char = findCharacterFromArgs(args)
     if r == 2 then 
-        print("mwcc_char_info: Must include either the name or the index of the character!")
+        xprint("mwcc_char_info: Must include either the name or the index of the character!")
         return r
     elseif r == 3 then
-        print("mwcc_char_info: Could not find specified character!")
+        xprint("mwcc_char_info: Could not find specified character!")
         return r
     end
 
@@ -165,16 +203,19 @@ end)
 
 -- Command for editing character info
 concommand.Add("mwcc_char_edit", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_char_edit: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
 
     -- Get char from identifier
     local r, index, char = findCharacterFromArgs(args)
     if r == 2 then 
-        print("mwcc_char_edit: Must include either the name or the index of the character!")
+        xprint("mwcc_char_edit: Must include either the name or the index of the character!")
         return r
     elseif r == 3 then
-        print("mwcc_char_edit: Could not find specified character!")
+        xprint("mwcc_char_edit: Could not find specified character!")
         return r
     end
 
@@ -191,7 +232,7 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
 
     -- Quick func for throwing an error for invalid command
     local function throwInvalid()
-        print("mwcc_char_edit: Invalid command format!")
+        xprint("mwcc_char_edit: Invalid command format!")
         return 4    -- means "invalid format"
     end
 
@@ -295,25 +336,28 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
     end
 
     SetCustomChar(index, char)
-    print("mwcc_char_edit: Changed character info for "..char.name.." successfully!")
+    xprint("mwcc_char_edit: Changed character info for "..char.name.." successfully!")
 end)
 
 -- Command for deleting characters
 concommand.Add("mwcc_char_delete", function(ply, cmd, args)
-    -- Check permission
-    if !checkAdmin(ply) then return 1 end   -- 1 means "no permission"
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_char_delete: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
 
     -- Get char from identifier
     local r, index, char = findCharacterFromArgs(args)
     if r == 2 then 
-        print("mwcc_char_delete: Must include either the name or the index of the character!")
+        xprint("mwcc_char_delete: Must include either the name or the index of the character!")
         return r
     elseif r == 3 then
-        print("mwcc_char_delete: Could not find specified character!")
+        xprint("mwcc_char_delete: Could not find specified character!")
         return r
     end
 
     -- Delete character
     DeleteCustomChar(index)
-    print("mwcc_char_delete: Character "..char.name.." deleted successfully!")
+    xprint("mwcc_char_delete: Character "..char.name.." deleted successfully!")
 end)
