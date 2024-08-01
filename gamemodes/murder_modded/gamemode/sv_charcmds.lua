@@ -339,6 +339,46 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
     xprint("mwcc_char_edit: Changed character info for "..char.name.." successfully!")
 end)
 
+-- Command for adding characters
+concommand.Add("mwcc_char_add", function(ply, cmd, args)
+    -- Do command checks
+    if !doCommandChecks(ply, args) then
+        xprint("mwcc_char_add: Only admins can run this command!")
+        return 1    -- means "no permission"
+    end
+
+    -- Create character w/ default settings and save it to characters
+    local char = {
+        pm = {
+            model = "male01",
+            color = Vector(.5, .5, .5),
+            bodygroups = {}
+        },
+        name = "Charlie",
+        nameColor = Vector(.5, .5, .5),
+        sex = "male"
+    }
+    AddCustomChar(char)
+
+    -- No more args, wrap up
+    if #args == 0 then
+        xprint("mwcc_add_char: Added default character successfully!")
+        return 0    -- means "success" (tbh i dont know if this'll make a difference in the end, i dont think so)
+    end
+
+    -- Run mwcc_char_edit on that character with the rest of the args
+    xprint("mwcc_add_char: Added default character, now using \"mwcc_char_edit\" to apply settings.")
+
+    local cmd = "mwcc_char_edit -byindex "..#GetCustomChars().." "
+    for _, arg in ipairs(args) do
+        cmd = cmd..arg.." "
+    end
+    if !canPrint then cmd = cmd.."-noprint" end
+
+    ply:ConCommand(cmd)
+    return 0
+end)
+
 -- Command for deleting characters
 concommand.Add("mwcc_char_delete", function(ply, cmd, args)
     -- Do command checks
