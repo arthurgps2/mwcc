@@ -371,6 +371,7 @@ concommand.Add("mwcc_char_add", function(ply, cmd, args)
 
     local cmd = "mwcc_char_edit -byindex "..#GetCustomChars().." "
     for _, arg in ipairs(args) do
+        if string.find(arg, " ") then arg = "\""..arg.."\"" end
         cmd = cmd..arg.." "
     end
     if !canPrint then cmd = cmd.."-noprint" end
