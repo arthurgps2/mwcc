@@ -192,8 +192,7 @@ concommand.Add("mwcc_char_info", function(ply, cmd, args)
     end
 
     print("SEX: "..char.sex)
-
-    print("BODYGROUPS ("..#char.pm.bodygroups.."):")
+    print("BODYGROUPS ("..table.Count(char.pm.bodygroups).."):")
     for k,v in pairs(char.pm.bodygroups) do
         print("- "..k..": "..v)
     end
