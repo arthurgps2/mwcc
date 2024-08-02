@@ -33,6 +33,8 @@ include("sv_bystandername.lua")
 include("sv_adminpanel.lua")
 include("sv_tker.lua")
 include("sv_flashlight.lua")
+
+-- MWCC
 include("sv_chars.lua")
 include("sv_charcmds.lua")
 
