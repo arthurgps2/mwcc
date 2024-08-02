@@ -155,6 +155,31 @@ local function findCharacterFromArgs(args)
     return 0, index, char
 end
 
+-- lmk if there's a better way to do this because this just feels criminal for some reason lol
+local function getModelBodygroups(name)
+    -- Use ragdoll to load model
+    local modelPath = player_manager.TranslatePlayerModel(name)
+    local ent = ents.Create("prop_ragdoll")
+    ent:SetModel(modelPath)
+
+    -- Table to be returned, let's also add model skin
+    local r = {}
+    if ent:SkinCount() > 1 then
+        r.Skin = 0
+    end
+
+    -- Add model bodygroups
+    local bgs = ent:GetBodyGroups()
+    for _, bg in ipairs(bgs) do
+        if ent:GetBodygroupCount(bg.id) <= 1 then continue end
+        r[bg.name] = 0
+    end
+
+    -- Remove entity and return table
+    ent:Remove()
+    return r
+end
+
 -- Command for printing specific character info
 concommand.Add("mwcc_char_info", function(ply, cmd, args)
     -- Do command checks
@@ -272,7 +297,10 @@ concommand.Add("mwcc_char_edit", function(ply, cmd, args)
             char.sex = args[i+1]
             i = i+1
         elseif varname == "-pm" then
-            char.pm.model = args[i+1]
+            if char.pm.model != args[i+1] then
+                char.pm.model = args[i+1]
+                char.pm.bodygroups = getModelBodygroups(char.pm.model)
+            end
             i = i+1
         elseif varname == "-pm-color" then
             local r = args[i+1]
