@@ -35,9 +35,10 @@ concommand.Add("mwcc_char_panel", function(ply)
 
         local charProperties = charScrollWrapper:Add("DForm")
         charProperties:Dock(FILL)
+        charProperties:SetLabel("Character settings")
 
         --  Name
-        charProperties:TextEntry("Name:")
+        local inputName = charProperties:TextEntry("Name:")
         
         -- Name color
         local inputNCLeft = vgui.Create("DLabel")
@@ -62,14 +63,28 @@ concommand.Add("mwcc_char_panel", function(ply)
         local inputSexRight = vgui.Create("DPanel")
         inputSexRight:Dock(FILL)
         inputSexRight:SetBackgroundColor(Color(0, 0, 0, 0))
+
         local inputSexMale = inputSexRight:Add("DButton")
+        local inputSexFemale = inputSexRight:Add("DButton")
+
         inputSexMale:Dock(LEFT)
         inputSexMale:SetWide(25)
         inputSexMale:SetText("M")
-        local inputSexFemale = inputSexRight:Add("DButton")
+        inputSexMale:SetIsToggle(true)
+        inputSexMale:SetToggle(true)
+        inputSexMale.DoClick = function()
+            inputSexMale:SetToggle(true)
+            inputSexFemale:SetToggle(false)
+        end
+
         inputSexFemale:Dock(RIGHT)
         inputSexFemale:SetWide(25)
         inputSexFemale:SetText("F")
+        inputSexFemale:SetIsToggle(true)
+        inputSexFemale.DoClick = function()
+            inputSexMale:SetToggle(false)
+            inputSexFemale:SetToggle(true)
+        end
         
         charProperties:AddItem(inputSexLeft, inputSexRight)
 
@@ -103,7 +118,9 @@ concommand.Add("mwcc_char_panel", function(ply)
         charProperties:Help("Bodygroups:")
 
         for i = 1, 10 do
-            charProperties:NumSlider("Bodygroup "..i, nil, 0, 4, 0)
+            local inputBG = charProperties:NumSlider("Bodygroup "..i, nil, 0, 4, 0)
+            inputBG:Dock(FILL)
+            inputBG:SetValue(0)
         end
     end
 end)
