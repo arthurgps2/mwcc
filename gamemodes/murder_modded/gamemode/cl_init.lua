@@ -20,6 +20,7 @@ include("cl_halos.lua")
 include("cl_spawns.lua")
 
 -- MWCC
+include("cl_charpanel.lua")
 
 GM.Debug = CreateClientConVar( "mu_debug", 0, true, true )
 GM.HaloRender = CreateClientConVar( "mu_halo_render", 1, true, true ) // should we render halos
