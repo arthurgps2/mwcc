@@ -2,24 +2,63 @@ local characters = {}
 
 local panel
 
+local function setCurrentChar(i)
+    panel.charIndex = i
+
+    -- Model
+    local char = characters[i]
+    if !char then return end
+
+    panel.charModel:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
+    
+    -- Name
+    panel.charProperties.name:SetValue(char.name)
+
+    -- Name color
+    if char.nameColor == "random" then
+        panel.charProperties.nameColorRandom:SetChecked(true)
+        panel.charProperties.nameColor:SetEnabled(false)
+        panel.charProperties.nameColor.color = Color(0, 0, 0, 255)
+    else
+        panel.charProperties.nameColorRandom:SetChecked(false)
+        panel.charProperties.nameColor:SetEnabled(true)
+        panel.charProperties.nameColor.color = 
+            Color(char.nameColor.x*255, char.nameColor.y*255, char.nameColor.z*255)
+    end
+
+    -- Sex
+    if char.sex == "male" then
+        panel.charProperties.sexMale:SetToggle(true)
+        panel.charProperties.sexFemale:SetToggle(false)
+    elseif char.sex == "female" then
+        panel.charProperties.sexMale:SetToggle(false)
+        panel.charProperties.sexFemale:SetToggle(true)
+    end
+end
+
 local function updateChars()
     if !IsValid(panel) then return end
 
     -- Update characters
     panel.charPick:Clear()
 
-    for _, char in ipairs(characters) do
+    for i, char in ipairs(characters) do
         local btn = panel.charPick:Add("SpawnIcon")
         btn:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
         btn:SetTooltip(char.name)
         btn:SetTooltipDelay(0)
         btn:Dock(TOP)
+        btn.DoClick = function()
+            setCurrentChar(i)
+        end
     end
 
     local btnAdd = panel.charPick:Add("DButton")
     btnAdd:Dock(TOP)
     btnAdd:SetSize(64, 64)
     btnAdd:SetText("NEW")
+
+    setCurrentChar(panel.charIndex)
 end
 
 net.Receive("sv_send_chars", function()
@@ -55,11 +94,15 @@ concommand.Add("mwcc_char_panel", function(ply)
             btn:Dock(TOP)
         end
 
+        panel.charPick = charPick
+
         -- Character model preview in the middle
         local charModel = panel:Add("DModelPanel")
         charModel:Dock(FILL)
         charModel:SetModel(player_manager.TranslatePlayerModel("male01"))
         charModel:SetAnimated(true)
+
+        panel.charModel = charModel
 
         -- Character settings on the right
         local charScrollWrapper = panel:Add("DScrollPanel")
@@ -70,8 +113,15 @@ concommand.Add("mwcc_char_panel", function(ply)
         charProperties:Dock(FILL)
         charProperties:SetLabel("Character settings")
 
+        panel.charProperties = charProperties
+
         --  Name
         local inputName = charProperties:TextEntry("Name:")
+        inputName.OnLoseFocus = function()
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-name", inputName:GetText(), "-noprint")
+        end
+
+        charProperties.name = inputName
         
         -- Name color
         local inputNCLeft = vgui.Create("DLabel")
@@ -88,15 +138,23 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputNCRandom:SetText("Random")
         inputNCRandom.OnChange = function()
             inputNCButton:SetEnabled(!inputNCRandom:GetChecked())
+
+            if inputNCRandom:GetChecked() then
+                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", "random", "-noprint")
+            else
+                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", 
+                    inputNCButton.color.r/255, inputNCButton.color.g/255, inputNCButton.color.b/255, "-noprint")
+            end
         end
         
         inputNCButton:SetWide(25)
         inputNCButton:Dock(RIGHT)
         inputNCButton:SetText("")
+        inputNCButton.color = Color(0, 0, 0, 255)
         inputNCButton.PaintOver = function()
-            local c = Color(255, 0, 0, 255)
-            if !inputNCButton:IsEnabled() then c.a = 127 end
-            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, c)
+            if !inputNCButton:IsEnabled() then  inputNCButton.color.a = 127 
+            else                                inputNCButton.color.a = 255 end
+            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, inputNCButton.color)
         end
 
         inputNCButton.DoClick = function()
@@ -108,21 +166,31 @@ concommand.Add("mwcc_char_panel", function(ply)
             mx = math.Clamp(mx, 0, ScrW() - colorWindow:GetWide())
             my = math.Clamp(my, 0, ScrH() - colorWindow:GetTall())
             colorWindow:SetPos(mx, my)
+
+            local color = colorWindow:Add("DColorMixer")
+            color:Dock(FILL)
+            color:SetAlphaBar(false)
+            color:SetPalette(false)
+            color:SetColor(inputNCButton.color)
+
             colorWindow.OnFocusChanged = function(focus)
                 -- According to the wiki, focus was supposed to be a boolean, but it's just the
                 -- panel that contains this function. Most definitely a bug.
                 -- The solution below is full quirk. Don't count on it too much.
                 if focus:HasFocus() then
                     colorWindow:Remove()
+
+                    inputNCButton.color = color:GetColor()
+                    RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", 
+                        inputNCButton.color.r/255, inputNCButton.color.g/255, inputNCButton.color.b/255, "-noprint")
                 end
             end
-            local color = colorWindow:Add("DColorMixer")
-            color:Dock(FILL)
-            color:SetAlphaBar(false)
-            color:SetPalette(false)
         end
 
         charProperties:AddItem(inputNCLeft, inputNCRight)
+
+        charProperties.nameColorRandom = inputNCRandom
+        charProperties.nameColor = inputNCButton
 
         -- Sex
         local inputSexLeft = vgui.Create("DLabel")
@@ -143,6 +211,7 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputSexMale.DoClick = function()
             inputSexMale:SetToggle(true)
             inputSexFemale:SetToggle(false)
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-sex", "male", "-noprint")
         end
 
         inputSexFemale:Dock(RIGHT)
@@ -152,9 +221,13 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputSexFemale.DoClick = function()
             inputSexMale:SetToggle(false)
             inputSexFemale:SetToggle(true)
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-sex", "female", "-noprint")
         end
 
         charProperties:AddItem(inputSexLeft, inputSexRight)
+
+        charProperties.sexMale = inputSexMale
+        charProperties.sexFemale = inputSexFemale
 
         -- Playermodel
         local inputPMLeft = vgui.Create("DLabel")
