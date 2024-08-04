@@ -145,6 +145,7 @@ function LoadCharsFile(f)
 
     -- Set characters table
     characters = jsonTable
+    updateClient()
     return 0, filename    -- means "success"
 end
 
