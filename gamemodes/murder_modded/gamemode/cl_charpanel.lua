@@ -47,12 +47,41 @@ concommand.Add("mwcc_char_panel", function(ply)
         local inputNCRight = vgui.Create("DPanel")
         inputNCRight:Dock(FILL)
         inputNCRight:SetBackgroundColor(Color(0, 0, 0, 0))
+
         local inputNCRandom = inputNCRight:Add("DCheckBoxLabel")
+        local inputNCButton = inputNCRight:Add("DButton")
+
         inputNCRandom:Dock(LEFT)
         inputNCRandom:SetText("Random")
-        local inputNCButton = inputNCRight:Add("DButton")
+        inputNCRandom.OnChange = function()
+            inputNCButton:SetEnabled(!inputNCRandom:GetChecked())
+        end
+        
         inputNCButton:SetWide(25)
         inputNCButton:Dock(RIGHT)
+        inputNCButton:SetText("")
+        inputNCButton.PaintOver = function(w, h)
+            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, Color(255, 0, 0, 255))
+        end
+
+        inputNCButton.DoClick = function()
+            local colorWindow = vgui.Create("DPanel")
+            colorWindow:SetSize(250, 200)
+            colorWindow:SetPos(gui.MousePos())
+            colorWindow:MakePopup()
+            colorWindow.OnFocusChanged = function(focus)
+                -- According to the wiki, focus was supposed to be a boolean, but it's just the
+                -- panel that contains this function. Most definitely a bug.
+                -- The solution below is full quirk. Don't count on it too much.
+                if focus:HasFocus() then
+                    colorWindow:Remove()
+                end
+            end
+            local color = colorWindow:Add("DColorMixer")
+            color:Dock(FILL)
+            color:SetAlphaBar(false)
+            color:SetPalette(false)
+        end
 
         charProperties:AddItem(inputNCLeft, inputNCRight)
 
@@ -85,7 +114,7 @@ concommand.Add("mwcc_char_panel", function(ply)
             inputSexMale:SetToggle(false)
             inputSexFemale:SetToggle(true)
         end
-        
+
         charProperties:AddItem(inputSexLeft, inputSexRight)
 
         -- Playermodel
