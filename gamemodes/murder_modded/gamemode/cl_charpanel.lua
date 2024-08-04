@@ -60,7 +60,7 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputNCButton:SetWide(25)
         inputNCButton:Dock(RIGHT)
         inputNCButton:SetText("")
-        inputNCButton.PaintOver = function(w, h)
+        inputNCButton.PaintOver = function()
             draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, Color(255, 0, 0, 255))
         end
 
@@ -134,12 +134,37 @@ concommand.Add("mwcc_char_panel", function(ply)
         local inputPMColorRight = vgui.Create("DPanel")
         inputPMColorRight:Dock(FILL)
         inputPMColorRight:SetBackgroundColor(Color(0, 0, 0, 0))
+
         local inputPMColorRandom = inputPMColorRight:Add("DCheckBoxLabel")
+        local inputPMColorButton = inputPMColorRight:Add("DButton")
+
         inputPMColorRandom:SetText("Random")
         inputPMColorRandom:Dock(LEFT)
-        local inputPMColorButton = inputPMColorRight:Add("DButton")
+        inputPMColorRandom.OnChange = function()
+            inputPMColorButton:SetEnabled(!inputPMColorRandom:GetChecked())
+        end
+        
         inputPMColorButton:SetWide(25)
         inputPMColorButton:Dock(RIGHT)
+        inputPMColorButton.PaintOver = function()
+            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, Color(255, 0, 0, 255))
+        end
+        inputPMColorButton.DoClick = function()
+            local colorWindow = vgui.Create("DPanel")
+            colorWindow:SetSize(250, 200)
+            colorWindow:SetPos(gui.MousePos())
+            colorWindow:MakePopup()
+            colorWindow.OnFocusChanged = function(focus)
+                -- Quirky ass if statement
+                if focus:HasFocus() then
+                    colorWindow:Remove()
+                end
+            end
+            local color = colorWindow:Add("DColorMixer")
+            color:Dock(FILL)
+            color:SetAlphaBar(false)
+            color:SetPalette(false)
+        end
 
         charProperties:AddItem(inputPMColorLeft, inputPMColorRight)
 
