@@ -1,9 +1,19 @@
+local characters = {}
+
 local panel
 
+net.Receive("sv_send_chars", function()
+    characters = util.JSONToTable(net.ReadString())
+end)
+
 concommand.Add("mwcc_char_panel", function(ply)
-    if panel then
+    if IsValid(panel) then
         
     else
+        -- Send character request
+        net.Start("cl_get_chars")
+        net.SendToServer()
+
         -- Main panel
         panel = vgui.Create("DFrame")
         panel:MakePopup()

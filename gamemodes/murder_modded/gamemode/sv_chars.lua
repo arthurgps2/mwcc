@@ -1,5 +1,32 @@
+-- Network strings
+util.AddNetworkString("sv_send_chars")
+util.AddNetworkString("cl_get_chars")
+
 -- Stores all our custom characters' data
 local characters = {}
+
+-- More network stuff
+local function updateClient()
+    local players = {}
+    for _, ply in player:GetAll() do
+        if ply:IsAdmin() then
+            table.insert(players, ply)
+        end
+    end
+
+    net.Start("sv_send_chars")
+    net.WriteString(util.TableToJSON(GetCustomChars()))
+    net.Send(players)
+end
+
+net.Receive("cl_get_chars",  function(len, ply)
+    print("server received!")
+    if !ply:IsAdmin() then return end
+
+    net.Start("sv_send_chars")
+    net.WriteString(util.TableToJSON(GetCustomChars()))
+    net.Send(ply)
+end)
 
 -- Getter, setter, adder, remover, urmommer etc.
 function GetCustomChars()
@@ -8,14 +35,17 @@ end
 
 function SetCustomChar(index, char)
     characters[index] = char
+    updateClient()
 end
 
 function AddCustomChar(char)
     table.insert(characters, char)
+    updateClient()
 end
 
 function DeleteCustomChar(index)
     table.remove(characters, index)
+    updateClient()
 end
 
 -- Save file
