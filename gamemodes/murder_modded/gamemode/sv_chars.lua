@@ -8,7 +8,7 @@ local characters = {}
 -- More network stuff
 local function updateClient()
     local players = {}
-    for _, ply in player:GetAll() do
+    for _, ply in pairs(player.GetAll()) do
         if ply:IsAdmin() then
             table.insert(players, ply)
         end
