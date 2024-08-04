@@ -61,7 +61,9 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputNCButton:Dock(RIGHT)
         inputNCButton:SetText("")
         inputNCButton.PaintOver = function()
-            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, Color(255, 0, 0, 255))
+            local c = Color(255, 0, 0, 255)
+            if !inputNCButton:IsEnabled() then c.a = 127 end
+            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, c)
         end
 
         inputNCButton.DoClick = function()
@@ -146,8 +148,11 @@ concommand.Add("mwcc_char_panel", function(ply)
         
         inputPMColorButton:SetWide(25)
         inputPMColorButton:Dock(RIGHT)
+        inputPMColorButton:SetText("")
         inputPMColorButton.PaintOver = function()
-            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, Color(255, 0, 0, 255))
+            local c = Color(255, 0, 0, 255)
+            if !inputPMColorButton:IsEnabled() then c.a = 127 end
+            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, c)
         end
         inputPMColorButton.DoClick = function()
             local colorWindow = vgui.Create("DPanel")
