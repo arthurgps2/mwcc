@@ -69,8 +69,12 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputNCButton.DoClick = function()
             local colorWindow = vgui.Create("DPanel")
             colorWindow:SetSize(250, 200)
-            colorWindow:SetPos(gui.MousePos())
             colorWindow:MakePopup()
+
+            local mx, my = input.GetCursorPos()
+            mx = math.Clamp(mx, 0, ScrW() - colorWindow:GetWide())
+            my = math.Clamp(my, 0, ScrH() - colorWindow:GetTall())
+            colorWindow:SetPos(mx, my)
             colorWindow.OnFocusChanged = function(focus)
                 -- According to the wiki, focus was supposed to be a boolean, but it's just the
                 -- panel that contains this function. Most definitely a bug.
@@ -131,7 +135,6 @@ concommand.Add("mwcc_char_panel", function(ply)
             pmMenuWindow:SetSize(528, 384)
             pmMenuWindow:MakePopup()
 
-            -- TODO gui.MousePos() is deprecated. replace mentions of it with this
             local mx, my = input.GetCursorPos()
             mx = math.Clamp(mx, 0, ScrW() - pmMenuWindow:GetWide())
             my = math.Clamp(my, 0, ScrH() - pmMenuWindow:GetTall())
@@ -192,8 +195,12 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputPMColorButton.DoClick = function()
             local colorWindow = vgui.Create("DPanel")
             colorWindow:SetSize(250, 200)
-            colorWindow:SetPos(gui.MousePos())
             colorWindow:MakePopup()
+
+            local mx, my = input.GetCursorPos()
+            mx = math.Clamp(mx, 0, ScrW() - colorWindow:GetWide())
+            my = math.Clamp(my, 0, ScrH() - colorWindow:GetTall())
+            colorWindow:SetPos(mx, my)
             colorWindow.OnFocusChanged = function(focus)
                 -- Quirky ass if statement
                 if focus:HasFocus() then
