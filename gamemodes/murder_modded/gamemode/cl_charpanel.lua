@@ -126,6 +126,41 @@ concommand.Add("mwcc_char_panel", function(ply)
         local inputPMRight = vgui.Create("DButton")
         inputPMRight:Dock(FILL)
         inputPMRight:SetText("male01")
+        inputPMRight.DoClick = function()
+            local pmMenuWindow = vgui.Create("DPanel")
+            pmMenuWindow:SetSize(528, 384)
+            pmMenuWindow:MakePopup()
+
+            -- TODO gui.MousePos() is deprecated. replace mentions of it with this
+            local mx, my = input.GetCursorPos()
+            mx = math.Clamp(mx, 0, ScrW() - pmMenuWindow:GetWide())
+            my = math.Clamp(my, 0, ScrH() - pmMenuWindow:GetTall())
+            pmMenuWindow:SetPos(mx, my)
+
+            pmMenuWindow.OnFocusChanged = function(focus)
+                -- Again don't count on this
+                if focus:HasFocus() then
+                    pmMenuWindow:Remove()
+                end
+            end
+
+            local pmMenu = pmMenuWindow:Add("DScrollPanel")
+            pmMenu:Dock(FILL)
+
+            local pmMenuLayout = pmMenu:Add("DIconLayout")
+            pmMenuLayout:Dock(FILL)
+            pmMenuLayout:SetSpaceX(0)
+            pmMenuLayout:SetSpaceY(0)
+            
+            for i = 1, 60 do
+                local btn = pmMenuLayout:Add("SpawnIcon")
+                btn:SetSize(64, 64)
+                btn.DoClick = function()
+                    pmMenuWindow:Remove()
+                end
+            end
+        end
+        
 
         charProperties:AddItem(inputPMLeft, inputPMRight)
 
