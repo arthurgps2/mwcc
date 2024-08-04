@@ -2,8 +2,29 @@ local characters = {}
 
 local panel
 
+local function updateChars()
+    if !IsValid(panel) then return end
+
+    -- Update characters
+    panel.charPick:Clear()
+
+    for _, char in ipairs(characters) do
+        local btn = panel.charPick:Add("SpawnIcon")
+        btn:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
+        btn:SetTooltip(char.name)
+        btn:SetTooltipDelay(0)
+        btn:Dock(TOP)
+    end
+
+    local btnAdd = panel.charPick:Add("DButton")
+    btnAdd:Dock(TOP)
+    btnAdd:SetSize(64, 64)
+    btnAdd:SetText("NEW")
+end
+
 net.Receive("sv_send_chars", function()
     characters = util.JSONToTable(net.ReadString())
+    updateChars()
 end)
 
 concommand.Add("mwcc_char_panel", function(ply)
@@ -20,6 +41,8 @@ concommand.Add("mwcc_char_panel", function(ply)
         panel:SetSize(600, 400)
         panel:Center()
         panel:SetTitle("Character Config")
+
+        panel.charIndex = 1
 
         -- Character selector on the left
         local charPick = panel:Add("DScrollPanel")
