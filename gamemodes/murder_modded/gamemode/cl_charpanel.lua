@@ -5,9 +5,25 @@ local panel
 local function setCurrentChar(i)
     panel.charIndex = i
 
+    if i == 0 then
+        panel.charModel:Hide()
+        panel.charProperties:GetParent():Hide()
+        return
+    end
+
+    panel.charModel:Show()
+    panel.charProperties:GetParent():Show()
+
     -- Model
     local char = characters[i]
-    if !char then return end
+    if !char then
+        if #characters < 1 then
+            setCurrentChar(0)
+        else
+            setCurrentChar(1)
+        end
+        return
+    end
 
     panel.charModel:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
     
@@ -57,8 +73,18 @@ local function updateChars()
     btnAdd:Dock(TOP)
     btnAdd:SetSize(64, 64)
     btnAdd:SetText("NEW")
+    btnAdd.justClicked = false
+    btnAdd.DoClick = function()
+        panel.charPick.justAddedChar = true
+        RunConsoleCommand("mwcc_char_add", "-noprint")
+    end
 
-    setCurrentChar(panel.charIndex)
+    if panel.charPick.justAddedChar then
+        panel.charPick.justAddedChar = false
+        setCurrentChar(#characters)
+    else
+        setCurrentChar(panel.charIndex)
+    end
 end
 
 net.Receive("sv_send_chars", function()
@@ -88,6 +114,7 @@ concommand.Add("mwcc_char_panel", function(ply)
         charPick:Dock(LEFT)
         charPick:SetMinimumSize(charPick:GetWide() + charPick:GetVBar():GetWide(), charPick:GetTall())
         charPick:SetBackgroundColor(Color(255, 0, 0, 255))
+        charPick.justAddedChar = false
 
         for i = 1, 10 do
             local btn = charPick:Add("SpawnIcon")
