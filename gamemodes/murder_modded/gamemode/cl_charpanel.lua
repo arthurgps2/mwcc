@@ -50,6 +50,9 @@ local function setCurrentChar(i)
         panel.charProperties.sexMale:SetToggle(false)
         panel.charProperties.sexFemale:SetToggle(true)
     end
+
+    -- Playermodel
+    panel.charProperties.playermodel:SetText(char.pm.model)
 end
 
 local function updateChars()
@@ -287,18 +290,22 @@ concommand.Add("mwcc_char_panel", function(ply)
             pmMenuLayout:Dock(FILL)
             pmMenuLayout:SetSpaceX(0)
             pmMenuLayout:SetSpaceY(0)
-            
-            for i = 1, 60 do
+
+            local pmList = player_manager.AllValidModels()
+            for name, model in SortedPairs(pmList) do
                 local btn = pmMenuLayout:Add("SpawnIcon")
                 btn:SetSize(64, 64)
+                btn:SetModel(model)
                 btn.DoClick = function()
+                    RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm", name, "-noprint")
                     pmMenuWindow:Remove()
                 end
             end
         end
         
-
         charProperties:AddItem(inputPMLeft, inputPMRight)
+
+        charProperties.playermodel = inputPMRight
 
         -- PM Color
         local inputPMColorLeft = vgui.Create("DLabel")
