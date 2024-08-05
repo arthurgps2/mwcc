@@ -360,7 +360,7 @@ concommand.Add("mwcc_char_panel", function(ply)
         -- Delete button
         local btnDelete = charProperties:Button("Delete character")
         btnDelete.DoClick = function()
-            RunConsoleCommand("mwcc_char_delete", "-byindex", panel.charIndex)
+            RunConsoleCommand("mwcc_char_delete", "-byindex", panel.charIndex, "-noprint")
         end
     end
 end)
