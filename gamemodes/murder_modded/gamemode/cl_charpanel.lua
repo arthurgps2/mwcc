@@ -1,5 +1,7 @@
 local CSEntMeta = FindMetaTable("CSEnt")
 
+local c_black = Color(0, 0, 0, 255) -- because
+
 -- I hope nothing wrong happens with this
 function CSEntMeta:GetPlayerColor()
     return self.playerColor or Vector()
@@ -152,7 +154,22 @@ concommand.Add("mwcc_char_panel", function(ply)
         charModel:Dock(FILL)
         charModel:SetModel(player_manager.TranslatePlayerModel("male01"))
         charModel:SetAnimated(true)
+        charModel.PaintOver = function()
+            local x, y = charModel:GetSize()
+            x = x/2
+            y = y/2 + 30
 
+            local a = panel.charProperties.nameColor.color.a
+            panel.charProperties.nameColor.color.a = 255
+
+            draw.SimpleText(panel.charProperties.name:GetText(), "MersRadial", 
+                x+1, y+1, c_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            draw.SimpleText(panel.charProperties.name:GetText(), "MersRadial", 
+                x, y, panel.charProperties.nameColor.color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            
+            panel.charProperties.nameColor.color.a = a
+        end
+        
         panel.charModel = charModel
 
         -- Character settings on the right
@@ -223,6 +240,12 @@ concommand.Add("mwcc_char_panel", function(ply)
             color:SetAlphaBar(false)
             color:SetPalette(false)
             color:SetColor(inputNCButton.color)
+            color.ValueChanged = function(color)
+                color.ValueChanged = function(color)
+                    local c = color:GetColor()
+                    panel.charProperties.nameColor.color = c
+                end
+            end
 
             colorWindow.OnFocusChanged = function(focus)
                 -- According to the wiki, focus was supposed to be a boolean, but it's just the
