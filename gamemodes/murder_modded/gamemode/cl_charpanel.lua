@@ -1,3 +1,10 @@
+local CSEntMeta = FindMetaTable("CSEnt")
+
+-- I hope nothing wrong happens with this
+function CSEntMeta:GetPlayerColor()
+    return self.playerColor or Vector()
+end
+
 local characters = {}
 
 local panel
@@ -53,6 +60,20 @@ local function setCurrentChar(i)
 
     -- Playermodel
     panel.charProperties.playermodel:SetText(char.pm.model)
+
+    -- PM color
+    if char.pm.color == "random" then
+        panel.charProperties.pmColorRandom:SetChecked(true)
+        panel.charProperties.pmColor:SetEnabled(false)
+        panel.charProperties.pmColor.color = Color(0, 0, 0, 255)
+    else
+        panel.charProperties.pmColorRandom:SetChecked(false)
+        panel.charProperties.pmColor:SetEnabled(true)
+        panel.charProperties.pmColor.color = 
+            Color(char.pm.color.x*255, char.pm.color.y*255, char.pm.color.z*255)
+    end
+
+    panel.charModel:GetEntity().playerColor = char.pm.color
 end
 
 local function updateChars()
@@ -327,10 +348,10 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputPMColorButton:SetWide(25)
         inputPMColorButton:Dock(RIGHT)
         inputPMColorButton:SetText("")
+        inputPMColorButton.color = Color(0, 0, 0, 255)
         inputPMColorButton.PaintOver = function()
-            local c = Color(255, 0, 0, 255)
-            if !inputPMColorButton:IsEnabled() then c.a = 127 end
-            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, c)
+            if !inputPMColorButton:IsEnabled() then inputPMColorButton.color.a = 127 end
+            draw.RoundedBox(0, 3, 3, inputNCButton:GetWide()-6, inputNCButton:GetTall()-6, inputPMColorButton.color)
         end
         inputPMColorButton.DoClick = function()
             local colorWindow = vgui.Create("DPanel")
@@ -341,19 +362,33 @@ concommand.Add("mwcc_char_panel", function(ply)
             mx = math.Clamp(mx, 0, ScrW() - colorWindow:GetWide())
             my = math.Clamp(my, 0, ScrH() - colorWindow:GetTall())
             colorWindow:SetPos(mx, my)
-            colorWindow.OnFocusChanged = function(focus)
-                -- Quirky ass if statement
-                if focus:HasFocus() then
-                    colorWindow:Remove()
-                end
-            end
+
             local color = colorWindow:Add("DColorMixer")
             color:Dock(FILL)
             color:SetAlphaBar(false)
             color:SetPalette(false)
+            color:SetColor(inputPMColorButton.color)
+            color.ValueChanged = function(color)
+                local c = color:GetColor()
+                panel.charModel:GetEntity().playerColor = Vector(c.r/255, c.g/255, c.b/255)
+            end
+
+            colorWindow.OnFocusChanged = function(focus)
+                -- Quirky ass if statement
+                if focus:HasFocus() then
+                    colorWindow:Remove()
+
+                    inputPMColorButton.color = color:GetColor()
+                    RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color",
+                        inputPMColorButton.color.r/255, inputPMColorButton.color.g/255, inputPMColorButton.color.b/255, "-noprint")
+                end
+            end
         end
 
         charProperties:AddItem(inputPMColorLeft, inputPMColorRight)
+
+        charProperties.pmColorRandom = inputPMColorRandom
+        charProperties.pmColor = inputPMColorButton
 
         -- PM bodygroups
         charProperties:Help("Bodygroups:")
