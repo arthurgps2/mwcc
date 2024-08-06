@@ -68,14 +68,16 @@ local function setCurrentChar(i)
         panel.charProperties.pmColorRandom:SetChecked(true)
         panel.charProperties.pmColor:SetEnabled(false)
         panel.charProperties.pmColor.color = Color(0, 0, 0, 255)
+
+        panel.charModel:GetEntity().playerColor = Vector()
     else
         panel.charProperties.pmColorRandom:SetChecked(false)
         panel.charProperties.pmColor:SetEnabled(true)
         panel.charProperties.pmColor.color = 
             Color(char.pm.color.x*255, char.pm.color.y*255, char.pm.color.z*255)
-    end
 
-    panel.charModel:GetEntity().playerColor = char.pm.color
+        panel.charModel:GetEntity().playerColor = char.pm.color
+    end
 end
 
 local function updateChars()
@@ -366,6 +368,13 @@ concommand.Add("mwcc_char_panel", function(ply)
         inputPMColorRandom:Dock(LEFT)
         inputPMColorRandom.OnChange = function()
             inputPMColorButton:SetEnabled(!inputPMColorRandom:GetChecked())
+
+            if inputPMColorRandom:GetChecked() then
+                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", "random", "-noprint")
+            else
+                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", 
+                    inputPMColorButton.color.r/255, inputPMColorButton.color.g/255, inputPMColorButton.color.b/255, "-noprint")
+            end
         end
         
         inputPMColorButton:SetWide(25)
