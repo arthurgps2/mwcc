@@ -8,6 +8,7 @@ function CSEntMeta:GetPlayerColor()
 end
 
 local charFile = ""
+local files = {}
 local characters = {}
 
 local panel
@@ -142,6 +143,11 @@ local function updateChars()
     -- Update files
     panel.file.name:SetValue(charFile)
 
+    panel.file.nameDrop:Clear()
+    for _, f in ipairs(files) do
+        panel.file.nameDrop:AddChoice(string.sub(f, 1, string.len(f)-5))
+    end
+
     -- Update characters
     panel.charPick:Clear()
 
@@ -176,7 +182,10 @@ end
 
 net.Receive("sv_send_chars", function()
     charFile = net.ReadString()
-    characters = util.JSONToTable(net.ReadString())
+
+    local filesAndChars = util.JSONToTable(net.ReadString())
+    files = filesAndChars.files
+    characters = filesAndChars.characters
     updateChars()
 end)
 
@@ -216,13 +225,27 @@ concommand.Add("mwcc_char_panel", function(ply)
         filePanel:Dock(TOP)
         filePanel:SetBackgroundColor(Color(0, 0, 0, 0))
 
+        local fileText = filePanel:Add("DLabel")
+        fileText:Dock(LEFT)
+        fileText:SetText("File:")
+        fileText:SizeToContentsX()
+        fileText:DockMargin(0, 0, 10, 0)
+
         local fileNameDrop = filePanel:Add("DComboBox")
         fileNameDrop:Dock(LEFT)
         fileNameDrop:SetWide(200)
+        fileNameDrop.OnSelect = function(self, index, value)
+            panel.file.name:SetValue(value)
+        end
+
+        filePanel.nameDrop = fileNameDrop
 
         local fileName = fileNameDrop:Add("DTextEntry")
         local w, h = fileNameDrop:GetSize()
         fileName:SetSize(w-20, h+1)
+        fileName.OnGetFocus = function()
+            panel.file.nameDrop:CloseMenu()
+        end
         
         filePanel.name = fileName
 

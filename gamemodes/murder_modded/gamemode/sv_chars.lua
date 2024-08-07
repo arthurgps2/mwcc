@@ -15,9 +15,14 @@ local function updateClient()
         end
     end
 
+    local filesAndChars = {
+        files = file.Find("mwcc/charconfigs/*.json", "DATA"),
+        characters = GetCustomChars()
+    }
+
     net.Start("sv_send_chars")
     net.WriteString(charFile)
-    net.WriteString(util.TableToJSON(GetCustomChars()))
+    net.WriteString(util.TableToJSON(filesAndChars))
     net.Send(players)
 end
 
@@ -25,9 +30,14 @@ net.Receive("cl_get_chars",  function(len, ply)
     print("server received!")
     if !ply:IsAdmin() then return end
 
+    local filesAndChars = {
+        files = file.Find("mwcc/charconfigs/*.json", "DATA"),
+        characters = GetCustomChars()
+    }
+
     net.Start("sv_send_chars")
     net.WriteString(charFile)
-    net.WriteString(util.TableToJSON(GetCustomChars()))
+    net.WriteString(util.TableToJSON(filesAndChars))
     net.Send(ply)
 end)
 
@@ -65,6 +75,8 @@ function SaveCharsFile(f)
     end
 
     file.Write(filename, json)
+    charFile = f
+    updateClient()
     return 0, filename    -- means success
 end
 
