@@ -78,6 +78,61 @@ local function setCurrentChar(i)
 
         panel.charModel:GetEntity().playerColor = char.pm.color
     end
+
+    -- Bodygroups
+    for _, v in pairs(panel.charProperties.bodygroups) do
+        v:Remove()
+    end
+    panel.charProperties.bodygroups = {}
+
+    -- TODO when chars are updated, bodygroup sliders order may end up changing. gotta fix that
+    for bgName, bgValue in pairs(char.pm.bodygroups) do
+        local inputBG = panel.charProperties:NumSlider(bgName:gsub("^%l", string.upper), nil, 0, 4, 0)
+        inputBG:Dock(FILL)
+        inputBG:SetValue(0)
+
+        if bgName == "Skin" then
+            inputBG:SetMax(panel.charModel:GetEntity():SkinCount() - 1)
+            inputBG:SetValue(bgValue)
+            inputBG.OnValueChanged = function(self, v)
+                panel.charModel:GetEntity():SetSkin(v)
+            end
+            panel.charModel:GetEntity():SetSkin(bgValue)
+        else
+            local bgId = panel.charModel:GetEntity():FindBodygroupByName(bgName)
+            inputBG:SetMax(panel.charModel:GetEntity():GetBodygroupCount(bgId) - 1)
+            inputBG:SetValue(bgValue)
+            inputBG.OnValueChanged = function(self, v)
+                panel.charModel:GetEntity():SetBodygroup(bgId, v)
+            end
+            panel.charModel:GetEntity():SetBodygroup(bgId, bgValue)
+        end
+
+        inputBG.dragging = false
+        inputBG.MouseReleased = function(self)
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex,
+                "-pm-body", bgName, self:GetValue(), "-noprint")
+        end
+        inputBG.Think = function(self)
+            if self:IsEditing() and !self.dragging then
+                self.dragging = true
+            elseif !self:IsEditing() and self.dragging then
+                self.dragging = false
+                self:MouseReleased(self)
+            end
+        end
+
+        panel.charProperties.bodygroups[bgName] = inputBG
+    end
+
+    -- Delete button
+    panel.charProperties.delete:Remove()
+
+    local btnDelete = panel.charProperties:Button("Delete character")
+    btnDelete.DoClick = function()
+        RunConsoleCommand("mwcc_char_delete", "-byindex", panel.charIndex, "-noprint")
+    end
+    panel.charProperties.delete = btnDelete
 end
 
 local function updateChars()
@@ -425,10 +480,13 @@ concommand.Add("mwcc_char_panel", function(ply)
         -- PM bodygroups
         charProperties:Help("Bodygroups:")
 
+        charProperties.bodygroups = {}
+
         for i = 1, 10 do
             local inputBG = charProperties:NumSlider("Bodygroup "..i, nil, 0, 4, 0)
             inputBG:Dock(FILL)
             inputBG:SetValue(0)
+            charProperties.bodygroups["Bodygroup "..i] = inputBG
         end
 
         -- Delete button
@@ -436,5 +494,7 @@ concommand.Add("mwcc_char_panel", function(ply)
         btnDelete.DoClick = function()
             RunConsoleCommand("mwcc_char_delete", "-byindex", panel.charIndex, "-noprint")
         end
+
+        charProperties.delete = btnDelete
     end
 end)
