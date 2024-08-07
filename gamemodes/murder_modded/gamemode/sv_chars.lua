@@ -3,6 +3,7 @@ util.AddNetworkString("sv_send_chars")
 util.AddNetworkString("cl_get_chars")
 
 -- Stores all our custom characters' data
+local charFile = ""
 local characters = {}
 
 -- More network stuff
@@ -15,6 +16,7 @@ local function updateClient()
     end
 
     net.Start("sv_send_chars")
+    net.WriteString(charFile)
     net.WriteString(util.TableToJSON(GetCustomChars()))
     net.Send(players)
 end
@@ -24,6 +26,7 @@ net.Receive("cl_get_chars",  function(len, ply)
     if !ply:IsAdmin() then return end
 
     net.Start("sv_send_chars")
+    net.WriteString(charFile)
     net.WriteString(util.TableToJSON(GetCustomChars()))
     net.Send(ply)
 end)
@@ -145,6 +148,7 @@ function LoadCharsFile(f)
 
     -- Set characters table
     characters = jsonTable
+    charFile = f
     updateClient()
     return 0, filename    -- means "success"
 end

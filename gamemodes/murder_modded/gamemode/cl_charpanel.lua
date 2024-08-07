@@ -7,6 +7,7 @@ function CSEntMeta:GetPlayerColor()
     return self.playerColor or Vector()
 end
 
+local charFile = ""
 local characters = {}
 
 local panel
@@ -138,6 +139,9 @@ end
 local function updateChars()
     if !IsValid(panel) then return end
 
+    -- Update files
+    panel.file.name:SetValue(charFile)
+
     -- Update characters
     panel.charPick:Clear()
 
@@ -171,9 +175,24 @@ local function updateChars()
 end
 
 net.Receive("sv_send_chars", function()
+    charFile = net.ReadString()
     characters = util.JSONToTable(net.ReadString())
     updateChars()
 end)
+
+local function fileMessage(txt)
+    panel.file.msg:SetText(txt)
+    panel.file.msg:SetColor(Color(0, 0, 0, 255))
+end
+
+local function fileError(txt)
+    panel.file.msg:SetText(txt)
+    panel.file.msg:SetColor(Color(255, 0, 0, 255))
+end
+
+local function fileHide()
+    panel.file.msg:SetText("")
+end
 
 concommand.Add("mwcc_char_panel", function(ply)
     if IsValid(panel) then
@@ -191,6 +210,50 @@ concommand.Add("mwcc_char_panel", function(ply)
         panel:SetTitle("Character Config")
 
         panel.charIndex = 1
+
+        -- File select panel
+        local filePanel = panel:Add("DPanel")
+        filePanel:Dock(TOP)
+        filePanel:SetBackgroundColor(Color(0, 0, 0, 0))
+
+        local fileNameDrop = filePanel:Add("DComboBox")
+        fileNameDrop:Dock(LEFT)
+        fileNameDrop:SetWide(200)
+
+        local fileName = fileNameDrop:Add("DTextEntry")
+        local w, h = fileNameDrop:GetSize()
+        fileName:SetSize(w-20, h+1)
+        
+        filePanel.name = fileName
+
+        local fileSave = filePanel:Add("DButton")
+        fileSave:Dock(LEFT)
+        fileSave:SetText("Save")
+        fileSave.DoClick = function()
+            local name = fileName:GetText()
+            if string.len(name) == 0 then 
+                fileError("Can't save an unnamed file!")
+                return
+            end
+            fileHide()
+            RunConsoleCommand("mwcc_save_chars", fileName:GetText(), "-noprint")
+        end
+
+        local fileLoad = filePanel:Add("DButton")
+        fileLoad:Dock(LEFT)
+        fileLoad:SetText("Load")
+        fileLoad.DoClick = function()
+            RunConsoleCommand("mwcc_load_chars", fileName:GetText(), "-noprint")
+        end
+
+        local fileMsg = filePanel:Add("DLabel")
+        fileMsg:Dock(FILL)
+        fileMsg:DockMargin(10, 0, 0, 0)
+        fileMsg:SetText("")
+
+        filePanel.msg = fileMsg
+
+        panel.file = filePanel
 
         -- Character selector on the left
         local charPick = panel:Add("DScrollPanel")
