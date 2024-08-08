@@ -121,8 +121,8 @@ function LoadCharsFile(f)
             end
 
             -- Name color must be a vector
-            if !isvector(v.nameColor) then
-                table.insert(errors, "at index "..k..", \"nameColor\" is not a vector!")
+            if !isvector(v.nameColor) and v.nameColor != "random" then
+                table.insert(errors, "at index "..k..", \"nameColor\" is neither a vector nor \"random\"!")
             end
 
             -- PM must be a table
