@@ -263,7 +263,6 @@ function GM:DrawGameHUD(ply)
 	if shouldDraw != false then
 		if self:GetAmMurderer() && self.LootCollected && self.LootCollected >= 1 then
 			if IsValid(tr.Entity) && tr.Entity:GetClass() == "prop_ragdoll" && tr.HitPos:Distance(tr.StartPos) < 80 then
-				-- TODO check murderer disguise system
 				if tr.Entity:GetBystanderName() != ply:GetBystanderName() || colorDif(tr.Entity:GetPlayerColor(), ply:GetPlayerColor()) > 0.1 then 
 					local h = draw.GetFontHeight("MersRadial")
 					drawTextShadow(translate.pressEToDisguiseFor1Loot, "MersRadialSmall", ScrW() / 2, ScrH() / 2 + 80 + h * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
