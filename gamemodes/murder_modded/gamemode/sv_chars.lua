@@ -228,7 +228,11 @@ function SetPlayerCharacters()
         ply:SetBystanderName(char.name)
 
         -- Name color
-        ply:SetNameColor(char.nameColor)
+        local nameColor = char.nameColor
+        if nameColor == "random" then
+            nameColor = Vector(math.Rand(0,1), math.Rand(0,1), math.Rand(0,1))
+        end
+        ply:SetNameColor(nameColor)
 
         -- Sex
         ply.ModelSex = char.sex
