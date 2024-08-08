@@ -312,6 +312,25 @@ concommand.Add("mwcc_char_panel", function(ply)
             
             panel.charProperties.nameColor.color.a = a
         end
+
+        charModel.pressed = false
+        charModel.pressX = 0
+        charModel.pressY = 0
+        charModel.DragMousePress = function(self)
+            self.pressX, self.pressY = input.GetCursorPos()
+            self.pressed = true
+        end
+        charModel.DragMouseRelease = function(self)
+            self.pressed = false
+        end
+        charModel.LayoutEntity = function(self, ent)
+            if self.pressed then
+                local mx, my = input.GetCursorPos()
+                local angles = ent:GetAngles() - Angle(0, self.pressX - mx, 0)
+                ent:SetAngles(angles)
+                self.pressX, self.pressY = mx, my
+            end
+        end
         
         panel.charModel = charModel
 
