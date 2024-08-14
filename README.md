@@ -10,4 +10,4 @@ You still need **Counter-Strike: Source** installed. If you're getting missing t
 
 *I'd like to thank the original creator for making such a timeless gamemode. You brought lots of fun and memorable moments throughout the years, to many players and YouTube viewers who couldn't afford the game at the time - me included, I laugh at those videos to this day :)*
 
-<sub>Feel free to push changes to this directory. This is the first time I'm making a GMod gamemode and it's definitely rough around the edges, so any help would be appreciated!<sub>
+<sub>Feel free to push changes to this repository. This is the first time I'm making a GMod gamemode and it's definitely rough around the edges, so any help would be appreciated!<sub>
