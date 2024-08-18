@@ -62,7 +62,11 @@ function GM:HUDPaint()
 	local client = LocalPlayer()
 
 	if round == 0 then
-		drawTextShadow(translate.minimumPlayers, "MersRadial", ScrW() / 2, ScrH() - 10, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+		drawTextShadow(translate.minimumPlayers, "MersRadial", ScrW() / 2, ScrH() - 30, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+
+		if LocalPlayer():IsAdmin() then
+			drawTextShadow("Type \"mwcc_char_panel\" in the console to get started!", "MersText1", ScrW() / 2, ScrH() - 10, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+		end
 	elseif round == 5 then
 		if self.StartNewRoundTime then
 			local seconds = math.ceil(self.StartNewRoundTime - CurTime())

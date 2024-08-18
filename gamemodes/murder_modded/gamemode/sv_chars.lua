@@ -180,6 +180,13 @@ hook.Add("Initialize", "InitializeChars", function()
     LoadCharsFile("default")
 end)
 
+gameevent.Listen("player_activate")
+hook.Add("player_activate", "SendWelcomeChat", function()
+    if player.GetCount() == 1 then
+        PrintMessage(HUD_PRINTTALK, "Hello and welcome to Murder with Custom Characters! Type \"mwcc_char_panel\" in the console to get started!")
+    end
+end)
+
 -- Set all players' characters from the table
 function SetPlayerCharacters()
     -- Shuffle so if there are not enough custom chars for everyone in the server, 
