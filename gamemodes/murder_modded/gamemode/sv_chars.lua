@@ -177,7 +177,12 @@ hook.Add("Initialize", "InitializeChars", function()
         SaveCharsFile("default")
     end
 
-    LoadCharsFile("default")
+    -- If there's a file named after the current map, load that instead
+    if file.Exists("mwcc/charconfigs/"..game.GetMap()..".json", "DATA") then
+       LoadCharsFile(game.GetMap()) 
+    else
+       LoadCharsFile("default")        
+    end
 end)
 
 gameevent.Listen("player_activate")
