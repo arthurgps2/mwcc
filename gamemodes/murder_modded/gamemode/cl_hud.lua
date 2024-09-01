@@ -339,8 +339,12 @@ function GM:DrawGameHUD(ply)
 	if shouldDraw then
 		if !pmPanel or !ispanel(pmPanel) then
 			pmPanel = vgui.Create("DModelPanel")
-			pmPanel:SetSize(200, 200)
+			pmPanel:SetSize(200, 250)
 			pmPanel:SetPos(ScrW() - pmPanel:GetWide(), ScrH() - pmPanel:GetTall())
+			pmPanel:SetFOV(20)
+			local h = 60
+			pmPanel:SetCamPos(Vector(80, 70, h))
+			pmPanel:SetLookAt(Vector(0, -10, h))
 			pmPanel.player = nil
 
 			function pmPanel:Refresh(ply)
