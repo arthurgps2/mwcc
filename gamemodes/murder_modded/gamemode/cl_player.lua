@@ -13,6 +13,11 @@ function EntityMeta:GetPlayerColor()
 	return self:GetNWVector("playerColor") or Vector()
 end
 
+-- Used only on client for playermodel at the corner
+function EntityMeta:SetPlayerColor(vec)
+	self.playerColor = vec
+end
+
 function EntityMeta:GetNameColor()
 	return self:GetNWVector("nameColor") or Vector()
 end

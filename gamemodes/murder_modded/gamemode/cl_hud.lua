@@ -335,6 +335,60 @@ function GM:DrawGameHUD(ply)
 		end
 	end
 	
+	local shouldDraw = hook.Run("HUDShouldDraw", "MurderPlayerModel")
+	if shouldDraw then
+		if !pmPanel or !ispanel(pmPanel) then
+			pmPanel = vgui.Create("DModelPanel")
+			pmPanel:SetSize(200, 200)
+			pmPanel:SetPos(ScrW() - pmPanel:GetWide(), ScrH() - pmPanel:GetTall())
+			pmPanel.player = nil
+
+			function pmPanel:Refresh(ply)
+				self.player = ply
+				self:SetModel(ply:GetModel())
+				self:GetEntity():SetSkin(ply:GetSkin())
+				self:GetEntity():SetPlayerColor(ply:GetPlayerColor())
+				
+				for i = 0, ply:GetNumBodyGroups() - 1 do
+					self:GetEntity():SetBodygroup(i, ply:GetBodygroup(i))
+				end
+
+				function pmPanel:LayoutEntity(ent)
+					if !ply:IsValid() then return end
+
+					ent:SetSequence(ply:GetSequence())
+					ent:SetPoseParameter("move_x", ply:GetPoseParameter("move_x") * 2 - 1)
+					ent:SetPoseParameter("move_y", ply:GetPoseParameter("move_y") * 2 - 1)
+					ent:SetCycle(ply:GetCycle())
+				end
+			end
+
+			pmPanel:SetPaintedManually(true)
+		end
+
+		local function shouldRefresh()
+			local pmEnt = pmPanel:GetEntity()
+			if !pmEnt then return true end
+
+			for i = 0, pmEnt:GetNumBodyGroups() do
+				if pmEnt:GetBodygroup(i) != ply:GetBodygroup(i) then 
+					return true 
+				end
+			end
+
+			return pmPanel.player != ply 
+			or pmEnt:GetModel() != ply:GetModel()
+			or pmEnt:GetSkin() != ply:GetSkin()
+			or colorDif(pmEnt:GetPlayerColor(), ply:GetPlayerColor()) >= .1
+		end
+
+		if shouldRefresh() then
+			pmPanel:Refresh(ply)
+		end
+
+		pmPanel:PaintManual()
+	end
+
 	local shouldDraw = hook.Run("HUDShouldDraw", "MurderPlayerType")
 	if shouldDraw != false then
 		local name = translate.bystander
