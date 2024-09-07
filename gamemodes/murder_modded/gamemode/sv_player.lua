@@ -570,6 +570,12 @@ function PlayerMeta:MurdererDisguise(copyent)
 		self.DisguiseNameColor = self:GetNameColor()
 		self.DisguiseModel = self:GetModel()
 		self.DisguiseColor = self:GetPlayerColor()
+		self.DisguiseSkin = self:GetSkin()
+
+		self.DisguiseBodygroups = {}
+		for i = 0, self:GetNumBodyGroups() - 1 do
+			self.DisguiseBodygroups[i] = self:GetBodygroup(i)
+		end
 	end
 	if GAMEMODE.CanDisguise:GetBool() then
 		self.Disguised = true
@@ -578,6 +584,11 @@ function PlayerMeta:MurdererDisguise(copyent)
 		self:SetNameColor(copyent:GetNameColor())
 		self:SetModel(copyent:GetModel())
 		self:SetPlayerColor(copyent:GetPlayerColor())
+		self:SetSkin(copyent:GetSkin())
+		
+		for i = 0, copyent:GetNumBodyGroups() - 1 do
+			self:SetBodygroup(i, copyent:GetBodygroup(i))
+		end
 	else
 		self:UnMurdererDisguise()
 	end
@@ -589,6 +600,11 @@ function PlayerMeta:UnMurdererDisguise()
 		self:SetNameColor(self.DisguiseNameColor)
 		self:SetModel(self.DisguiseModel)
 		self:SetPlayerColor(self.DisguiseColor)
+		self:SetSkin(self.DisguiseSkin)
+
+		for i, v in pairs(self.DisguiseBodygroups) do
+			self:SetBodygroup(i, v)
+		end
 	end
 	self.Disguised = false
 end

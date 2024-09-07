@@ -374,7 +374,7 @@ function GM:DrawGameHUD(ply)
 			local pmEnt = pmPanel:GetEntity()
 			if !pmEnt then return true end
 
-			for i = 0, pmEnt:GetNumBodyGroups() do
+			for i = 0, pmEnt:GetNumBodyGroups() - 1 do
 				if pmEnt:GetBodygroup(i) != ply:GetBodygroup(i) then 
 					return true 
 				end
