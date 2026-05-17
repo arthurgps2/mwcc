@@ -37,6 +37,7 @@ local function setCurrentChar(i)
     end
 
     panel.charModel:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
+    local charModelEntity = panel.charModel:GetEntity()
     
     -- Name
     panel.charProperties.name:SetValue(char.name)
@@ -71,50 +72,28 @@ local function setCurrentChar(i)
         panel.charProperties.pmColor:SetEnabled(false)
         panel.charProperties.pmColor.color = Color(0, 0, 0, 255)
 
-        panel.charModel:GetEntity().playerColor = Vector()
+        charModelEntity.playerColor = Vector()
     else
         panel.charProperties.pmColorRandom:SetChecked(false)
         panel.charProperties.pmColor:SetEnabled(true)
         panel.charProperties.pmColor.color = 
             Color(char.pm.color.x*255, char.pm.color.y*255, char.pm.color.z*255)
 
-        panel.charModel:GetEntity().playerColor = char.pm.color
+        charModelEntity.playerColor = char.pm.color
     end
 
-    -- Bodygroups
+    -- Skin and bodygroups
     for _, v in pairs(panel.charProperties.bodygroups) do
         v:Remove()
     end
     panel.charProperties.bodygroups = {}
 
-    -- TODO when chars are updated, bodygroup sliders order may end up changing. gotta fix that
-    for bgName, bgValue in pairs(char.pm.bodygroups) do
-        local inputBG = panel.charProperties:NumSlider(bgName:gsub("^%l", string.upper), nil, 0, 4, 0)
+    local function createSlider(name, maxValue)
+        local inputBG = panel.charProperties:NumSlider(name:gsub("^%l", string.upper), nil, 0, 4, 0)
         inputBG:Dock(FILL)
-        inputBG:SetValue(0)
-
-        if bgName == "Skin" then
-            inputBG:SetMax(panel.charModel:GetEntity():SkinCount() - 1)
-            inputBG:SetValue(bgValue)
-            inputBG.OnValueChanged = function(self, v)
-                panel.charModel:GetEntity():SetSkin(v)
-            end
-            panel.charModel:GetEntity():SetSkin(bgValue)
-        else
-            local bgId = panel.charModel:GetEntity():FindBodygroupByName(bgName)
-            inputBG:SetMax(panel.charModel:GetEntity():GetBodygroupCount(bgId) - 1)
-            inputBG:SetValue(bgValue)
-            inputBG.OnValueChanged = function(self, v)
-                panel.charModel:GetEntity():SetBodygroup(bgId, v)
-            end
-            panel.charModel:GetEntity():SetBodygroup(bgId, bgValue)
-        end
-
+        inputBG:SetValue(char.pm.bodygroups[name])
+        inputBG:SetMax(maxValue)
         inputBG.dragging = false
-        inputBG.MouseReleased = function(self)
-            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex,
-                "-pm-body", bgName, self:GetValue(), "-noprint")
-        end
         inputBG.Think = function(self)
             if self:IsEditing() and !self.dragging then
                 self.dragging = true
@@ -124,7 +103,39 @@ local function setCurrentChar(i)
             end
         end
 
-        panel.charProperties.bodygroups[bgName] = inputBG
+        panel.charProperties.bodygroups[name] = inputBG
+        return inputBG
+    end
+
+    local skinValue = char.pm.bodygroups.Skin
+    if skinValue then
+        local skinSlider = createSlider("Skin", charModelEntity:SkinCount() - 1)
+        skinSlider.OnValueChanged = function(self, v)
+            charModelEntity:SetSkin(v)
+        end
+        skinSlider.MouseReleased = function(self)
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex,
+                "-pm-body", "Skin", self:GetValue(), "-noprint")
+        end
+
+        charModelEntity:SetSkin(skinValue)
+    end
+
+    for i = 0, #charModelEntity:GetBodyGroups() - 1 do
+        local bgName = charModelEntity:GetBodygroupName(i)
+        local bgValue = char.pm.bodygroups[bgName]
+        if not bgValue then continue end
+
+        local bgSlider = createSlider(bgName, charModelEntity:GetBodygroupCount(i) - 1)
+        bgSlider.OnValueChanged = function(self, v)
+            charModelEntity:SetBodygroup(i, v)
+        end
+        bgSlider.MouseReleased = function(self)
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex,
+                "-pm-body", bgName, self:GetValue(), "-noprint")
+        end
+
+        charModelEntity:SetBodygroup(i, bgValue)
     end
 
     -- Delete button
