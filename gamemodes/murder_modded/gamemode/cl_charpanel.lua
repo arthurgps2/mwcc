@@ -527,8 +527,51 @@ concommand.Add("mwcc_char_panel", function(ply)
 
     local charProperties = charPropertiesWrapper:Add("DScrollPanel")
     charProperties:Dock(FILL)
-    -- charProperties:DockPadding(4, 4, 4, 4)
     panel.charProperties = charProperties
+
+    -- PLAYERMODEL
+    local pmField = createButtonField("Playermodel: ")
+    charProperties:AddItem(pmField)
+
+    local pmFieldButton = pmField.button
+    pmFieldButton.DoClick = function()
+        local pmMenuWindow = vgui.Create("DPanel")
+        pmMenuWindow:SetSize(528, 384)
+        pmMenuWindow:MakePopup()
+
+        local mx, my = input.GetCursorPos()
+        mx = math.Clamp(mx, 0, ScrW() - pmMenuWindow:GetWide())
+        my = math.Clamp(my, 0, ScrH() - pmMenuWindow:GetTall())
+        pmMenuWindow:SetPos(mx, my)
+
+        pmMenuWindow.OnFocusChanged = function(focus)
+            -- Again don't count on this
+            if focus:HasFocus() then
+                pmMenuWindow:Remove()
+            end
+        end
+
+        local pmMenu = pmMenuWindow:Add("DScrollPanel")
+        pmMenu:Dock(FILL)
+
+        local pmMenuLayout = pmMenu:Add("DIconLayout")
+        pmMenuLayout:Dock(FILL)
+        pmMenuLayout:SetSpaceX(0)
+        pmMenuLayout:SetSpaceY(0)
+
+        local pmList = player_manager.AllValidModels()
+        for name, model in SortedPairs(pmList) do
+            local btn = pmMenuLayout:Add("SpawnIcon")
+            btn:SetSize(64, 64)
+            btn:SetModel(model)
+            btn.DoClick = function()
+                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm", name, "-noprint")
+                pmMenuWindow:Remove()
+            end
+        end
+    end
+
+    charProperties.playermodel = pmFieldButton
 
     -- NAME
     local nameField = createTextField("Name: ")
@@ -593,49 +636,7 @@ concommand.Add("mwcc_char_panel", function(ply)
     charProperties.sexMale = mSexButton
     charProperties.sexFemale = fSexButton
 
-    -- PLAYERMODEL
-    local pmField = createButtonField("Playermodel: ")
-    charProperties:AddItem(pmField)
-
-    local pmFieldButton = pmField.button
-    pmFieldButton.DoClick = function()
-        local pmMenuWindow = vgui.Create("DPanel")
-        pmMenuWindow:SetSize(528, 384)
-        pmMenuWindow:MakePopup()
-
-        local mx, my = input.GetCursorPos()
-        mx = math.Clamp(mx, 0, ScrW() - pmMenuWindow:GetWide())
-        my = math.Clamp(my, 0, ScrH() - pmMenuWindow:GetTall())
-        pmMenuWindow:SetPos(mx, my)
-
-        pmMenuWindow.OnFocusChanged = function(focus)
-            -- Again don't count on this
-            if focus:HasFocus() then
-                pmMenuWindow:Remove()
-            end
-        end
-
-        local pmMenu = pmMenuWindow:Add("DScrollPanel")
-        pmMenu:Dock(FILL)
-
-        local pmMenuLayout = pmMenu:Add("DIconLayout")
-        pmMenuLayout:Dock(FILL)
-        pmMenuLayout:SetSpaceX(0)
-        pmMenuLayout:SetSpaceY(0)
-
-        local pmList = player_manager.AllValidModels()
-        for name, model in SortedPairs(pmList) do
-            local btn = pmMenuLayout:Add("SpawnIcon")
-            btn:SetSize(64, 64)
-            btn:SetModel(model)
-            btn.DoClick = function()
-                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm", name, "-noprint")
-                pmMenuWindow:Remove()
-            end
-        end
-    end
-
-    charProperties.playermodel = pmFieldButton
+    
 
     -- PLAYERMODEL COLOR
     local pmColorField = createColorField("Playermodel color: ")
