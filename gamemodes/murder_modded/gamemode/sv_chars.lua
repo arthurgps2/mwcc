@@ -27,7 +27,6 @@ local function updateClient()
 end
 
 net.Receive("cl_get_chars",  function(len, ply)
-    print("server received!")
     if !ply:IsAdmin() then return end
 
     local filesAndChars = {
@@ -188,7 +187,7 @@ end)
 gameevent.Listen("player_activate")
 hook.Add("player_activate", "SendWelcomeChat", function()
     if player.GetCount() == 1 then
-        PrintMessage(HUD_PRINTTALK, "Hello and welcome to Murder with Custom Characters! Type \"mwcc_char_panel\" in the console to get started!")
+        PrintMessage(HUD_PRINTTALK, "Hello and welcome to Murder with Custom Characters! Press F3 or type \"mwcc_char_panel\" in the console to get started!")
     end
 end)
 
@@ -249,4 +248,9 @@ function SetPlayerCharacters()
         -- Sex
         ply.ModelSex = char.sex
     end
+end
+
+
+function GM:ShowSpare1(ply)
+    ply:ConCommand("mwcc_char_panel")
 end

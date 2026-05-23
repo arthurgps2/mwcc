@@ -65,7 +65,7 @@ function GM:HUDPaint()
 		drawTextShadow(translate.minimumPlayers, "MersRadial", ScrW() / 2, ScrH() - 30, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 
 		if LocalPlayer():IsAdmin() then
-			drawTextShadow("Type \"mwcc_char_panel\" in the console to get started!", "MersText1", ScrW() / 2, ScrH() - 10, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+			drawTextShadow("Press F3 to get started!", "MersText1", ScrW() / 2, ScrH() - 10, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 		end
 	elseif round == 5 then
 		if self.StartNewRoundTime then

@@ -357,356 +357,357 @@ end
 
 concommand.Add("mwcc_char_panel", function(ply)
     if IsValid(panel) then
-        
-    else
-        -- Send character request
-        net.Start("cl_get_chars")
-        net.SendToServer()
-
-        ----------------------------------
-        -- MAIN PANEL
-        ----------------------------------
-        panel = vgui.Create("DFrame")
         panel:MakePopup()
-        panel:SetSize(900, 600)
-        panel:Center()
-        panel:SetTitle("Character Config")
+        return
+    end
 
-        panel.charIndex = 1
+    -- Send character request
+    net.Start("cl_get_chars")
+    net.SendToServer()
 
-        ----------------------------------
-        -- FILE SELECT PANEL
-        ----------------------------------
-        local filePanel = panel:Add("DPanel")
-        filePanel:Dock(TOP)
-        filePanel:SetBackgroundColor(Color(0, 0, 0, 0))
-        filePanel:DockMargin(4, 4, 4, 4)
+    ----------------------------------
+    -- MAIN PANEL
+    ----------------------------------
+    panel = vgui.Create("DFrame")
+    panel:MakePopup()
+    panel:SetSize(900, 600)
+    panel:Center()
+    panel:SetTitle("Character Config")
 
-        local fileText = filePanel:Add("DLabel")
-        fileText:Dock(LEFT)
-        fileText:SetText("File:")
-        fileText:SizeToContentsX()
-        fileText:DockMargin(0, 0, 10, 0)
+    panel.charIndex = 1
 
-        local fileNameDrop = filePanel:Add("DComboBox")
-        fileNameDrop:Dock(LEFT)
-        fileNameDrop:SetWide(200)
-        fileNameDrop.OnSelect = function(self, index, value)
-            panel.file.name:SetValue(value)
+    ----------------------------------
+    -- FILE SELECT PANEL
+    ----------------------------------
+    local filePanel = panel:Add("DPanel")
+    filePanel:Dock(TOP)
+    filePanel:SetBackgroundColor(Color(0, 0, 0, 0))
+    filePanel:DockMargin(4, 4, 4, 4)
+
+    local fileText = filePanel:Add("DLabel")
+    fileText:Dock(LEFT)
+    fileText:SetText("File:")
+    fileText:SizeToContentsX()
+    fileText:DockMargin(0, 0, 10, 0)
+
+    local fileNameDrop = filePanel:Add("DComboBox")
+    fileNameDrop:Dock(LEFT)
+    fileNameDrop:SetWide(200)
+    fileNameDrop.OnSelect = function(self, index, value)
+        panel.file.name:SetValue(value)
+    end
+
+    filePanel.nameDrop = fileNameDrop
+
+    local fileName = fileNameDrop:Add("DTextEntry")
+    local w, h = fileNameDrop:GetSize()
+    fileName:SetSize(w-20, h+1)
+    fileName.OnGetFocus = function()
+        panel.file.nameDrop:CloseMenu()
+    end
+    
+    filePanel.name = fileName
+
+    local fileSave = filePanel:Add("DButton")
+    fileSave:Dock(LEFT)
+    fileSave:SetText("Save")
+    fileSave.DoClick = function()
+        local name = fileName:GetText()
+        if string.len(name) == 0 then 
+            fileError("Can't save an unnamed file!")
+            return
         end
+        fileHide()
+        RunConsoleCommand("mwcc_save_chars", fileName:GetText(), "-noprint")
+    end
 
-        filePanel.nameDrop = fileNameDrop
+    local fileLoad = filePanel:Add("DButton")
+    fileLoad:Dock(LEFT)
+    fileLoad:SetText("Load")
+    fileLoad.DoClick = function()
+        RunConsoleCommand("mwcc_load_chars", fileName:GetText(), "-noprint")
+    end
 
-        local fileName = fileNameDrop:Add("DTextEntry")
-        local w, h = fileNameDrop:GetSize()
-        fileName:SetSize(w-20, h+1)
-        fileName.OnGetFocus = function()
-            panel.file.nameDrop:CloseMenu()
-        end
-        
-        filePanel.name = fileName
+    local fileMsg = filePanel:Add("DLabel")
+    fileMsg:Dock(FILL)
+    fileMsg:DockMargin(10, 0, 0, 0)
+    fileMsg:SetText("")
 
-        local fileSave = filePanel:Add("DButton")
-        fileSave:Dock(LEFT)
-        fileSave:SetText("Save")
-        fileSave.DoClick = function()
-            local name = fileName:GetText()
-            if string.len(name) == 0 then 
-                fileError("Can't save an unnamed file!")
-                return
-            end
-            fileHide()
-            RunConsoleCommand("mwcc_save_chars", fileName:GetText(), "-noprint")
-        end
+    filePanel.msg = fileMsg
 
-        local fileLoad = filePanel:Add("DButton")
-        fileLoad:Dock(LEFT)
-        fileLoad:SetText("Load")
-        fileLoad.DoClick = function()
-            RunConsoleCommand("mwcc_load_chars", fileName:GetText(), "-noprint")
-        end
+    panel.file = filePanel
 
-        local fileMsg = filePanel:Add("DLabel")
-        fileMsg:Dock(FILL)
-        fileMsg:DockMargin(10, 0, 0, 0)
-        fileMsg:SetText("")
+    ----------------------------------
+    -- CHARACTER SELECT
+    ----------------------------------
+    local charPickWrapper = panel:Add("DPanel")
+    charPickWrapper:SetWide(64)
+    charPickWrapper:Dock(LEFT)
 
-        filePanel.msg = fileMsg
+    local charPick = charPickWrapper:Add("DScrollPanel")
+    charPick:SetWide(79)
+    charPick:Dock(LEFT)
+    charPick.justAddedChar = false
 
-        panel.file = filePanel
-
-        ----------------------------------
-        -- CHARACTER SELECT
-        ----------------------------------
-        local charPickWrapper = panel:Add("DPanel")
-        charPickWrapper:SetWide(64)
-        charPickWrapper:Dock(LEFT)
-
-        local charPick = charPickWrapper:Add("DScrollPanel")
-        charPick:SetWide(79)
-        charPick:Dock(LEFT)
-        charPick.justAddedChar = false
+    charPick.pnlCanvas:SetWide(64)
+    charPick.pnlCanvas:Dock(LEFT)
+    charPick.pnlCanvas.PerformLayout = function(pnl)
+        charPick:PerformLayoutInternal()
 
         charPick.pnlCanvas:SetWide(64)
-        charPick.pnlCanvas:Dock(LEFT)
-        charPick.pnlCanvas.PerformLayout = function(pnl)
-            charPick:PerformLayoutInternal()
+        charPick:Rebuild()
 
-            charPick.pnlCanvas:SetWide(64)
-            charPick:Rebuild()
-
-            if charPick:GetVBar().Enabled then
-                charPickWrapper:SetWide(79)
-            else
-                charPickWrapper:SetWide(64)
-            end
-
-            charPick:InvalidateParent()
+        if charPick:GetVBar().Enabled then
+            charPickWrapper:SetWide(79)
+        else
+            charPickWrapper:SetWide(64)
         end
 
-        for i = 1, 10 do
-            local btn = charPick:Add("SpawnIcon")
-            btn:Dock(TOP)
-        end
+        charPick:InvalidateParent()
+    end
 
-        panel.charPick = charPick
+    for i = 1, 10 do
+        local btn = charPick:Add("SpawnIcon")
+        btn:Dock(TOP)
+    end
 
-        ----------------------------------
-        -- CHARACTER MODEL PREVIEW
-        ----------------------------------
-        local charModel = panel:Add("DModelPanel")
-        charModel:Dock(FILL)
-        charModel:SetModel(player_manager.TranslatePlayerModel("male01"))
-        charModel:SetAnimated(true)
-        charModel.PaintOver = function()
-            local x, y = charModel:GetSize()
-            x = x/2
-            y = y/2 + 30
+    panel.charPick = charPick
 
-            local a = panel.charProperties.nameColor.color.a
-            panel.charProperties.nameColor.color.a = 255
+    ----------------------------------
+    -- CHARACTER MODEL PREVIEW
+    ----------------------------------
+    local charModel = panel:Add("DModelPanel")
+    charModel:Dock(FILL)
+    charModel:SetModel(player_manager.TranslatePlayerModel("male01"))
+    charModel:SetAnimated(true)
+    charModel.PaintOver = function()
+        local x, y = charModel:GetSize()
+        x = x/2
+        y = y/2 + 30
 
-            draw.SimpleText(panel.charProperties.name:GetText(), "MersRadial", 
-                x+1, y+1, c_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            draw.SimpleText(panel.charProperties.name:GetText(), "MersRadial", 
-                x, y, panel.charProperties.nameColor.color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            
-            panel.charProperties.nameColor.color.a = a
-        end
+        local a = panel.charProperties.nameColor.color.a
+        panel.charProperties.nameColor.color.a = 255
 
-        charModel.pressed = false
-        charModel.pressX = 0
-        charModel.pressY = 0
-        charModel.DragMousePress = function(self)
-            self.pressX, self.pressY = input.GetCursorPos()
-            self.pressed = true
-        end
-        charModel.DragMouseRelease = function(self)
-            self.pressed = false
-        end
-        charModel.LayoutEntity = function(self, ent)
-            if self.pressed then
-                local mx, my = input.GetCursorPos()
-                local angles = ent:GetAngles() - Angle(0, self.pressX - mx, 0)
-                ent:SetAngles(angles)
-                self.pressX, self.pressY = mx, my
-            end
-        end
+        draw.SimpleText(panel.charProperties.name:GetText(), "MersRadial", 
+            x+1, y+1, c_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText(panel.charProperties.name:GetText(), "MersRadial", 
+            x, y, panel.charProperties.nameColor.color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         
-        panel.charModel = charModel
+        panel.charProperties.nameColor.color.a = a
+    end
 
-        ----------------------------------
-        -- CHARACTER SETTINGS
-        ----------------------------------
-        local charPropertiesWrapper = panel:Add("DPanel")
-        charPropertiesWrapper:SetWide(280)
-        charPropertiesWrapper:DockPadding(8, 8, 8, 8)
-        charPropertiesWrapper:Dock(RIGHT)
-
-        local charProperties = charPropertiesWrapper:Add("DScrollPanel")
-        charProperties:Dock(FILL)
-        -- charProperties:DockPadding(4, 4, 4, 4)
-        panel.charProperties = charProperties
-
-        -- NAME
-        local nameField = createTextField("Name: ")
-        charProperties:AddItem(nameField)
-
-        local nameFieldTextEntry = nameField.textEntry
-        local updateNameFunc = function()
-            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-name", nameFieldTextEntry:GetText(), "-noprint")
+    charModel.pressed = false
+    charModel.pressX = 0
+    charModel.pressY = 0
+    charModel.DragMousePress = function(self)
+        self.pressX, self.pressY = input.GetCursorPos()
+        self.pressed = true
+    end
+    charModel.DragMouseRelease = function(self)
+        self.pressed = false
+    end
+    charModel.LayoutEntity = function(self, ent)
+        if self.pressed then
+            local mx, my = input.GetCursorPos()
+            local angles = ent:GetAngles() - Angle(0, self.pressX - mx, 0)
+            ent:SetAngles(angles)
+            self.pressX, self.pressY = mx, my
         end
+    end
+    
+    panel.charModel = charModel
 
-        nameFieldTextEntry.OnLoseFocus = updateNameFunc
-        nameFieldTextEntry.OnEnter = updateNameFunc
+    ----------------------------------
+    -- CHARACTER SETTINGS
+    ----------------------------------
+    local charPropertiesWrapper = panel:Add("DPanel")
+    charPropertiesWrapper:SetWide(280)
+    charPropertiesWrapper:DockPadding(8, 8, 8, 8)
+    charPropertiesWrapper:Dock(RIGHT)
 
-        charProperties.name = nameFieldTextEntry
+    local charProperties = charPropertiesWrapper:Add("DScrollPanel")
+    charProperties:Dock(FILL)
+    -- charProperties:DockPadding(4, 4, 4, 4)
+    panel.charProperties = charProperties
 
-        -- NAME COLOR
-        local nameColorField = createColorField("Name color: ")
-        charProperties:AddItem(nameColorField)
+    -- NAME
+    local nameField = createTextField("Name: ")
+    charProperties:AddItem(nameField)
 
-        local nameColorButton = nameColorField.colorButton
-        local nameColorRandom = nameColorField.randomCheckbox
+    local nameFieldTextEntry = nameField.textEntry
+    local updateNameFunc = function()
+        RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-name", nameFieldTextEntry:GetText(), "-noprint")
+    end
 
-        nameColorButton:SetText("")
+    nameFieldTextEntry.OnLoseFocus = updateNameFunc
+    nameFieldTextEntry.OnEnter = updateNameFunc
 
-        nameColorButton.OnColorWindowValueChanged = function(color)
-            charProperties.nameColor.color = color
-        end
+    charProperties.name = nameFieldTextEntry
 
-        nameColorButton.OnColorWindowFocusChanged = function(focus)
+    -- NAME COLOR
+    local nameColorField = createColorField("Name color: ")
+    charProperties:AddItem(nameColorField)
+
+    local nameColorButton = nameColorField.colorButton
+    local nameColorRandom = nameColorField.randomCheckbox
+
+    nameColorButton:SetText("")
+
+    nameColorButton.OnColorWindowValueChanged = function(color)
+        charProperties.nameColor.color = color
+    end
+
+    nameColorButton.OnColorWindowFocusChanged = function(focus)
+        RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", 
+            nameColorButton.color.r/255, nameColorButton.color.g/255, nameColorButton.color.b/255, "-noprint")
+    end
+    
+    nameColorRandom.OnChange = function()
+        nameColorButton:SetEnabled(!nameColorRandom:GetChecked())
+
+        if nameColorRandom:GetChecked() then
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", "random", "-noprint")
+        else
             RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", 
                 nameColorButton.color.r/255, nameColorButton.color.g/255, nameColorButton.color.b/255, "-noprint")
         end
-        
-        nameColorRandom.OnChange = function()
-            nameColorButton:SetEnabled(!nameColorRandom:GetChecked())
+    end
 
-            if nameColorRandom:GetChecked() then
-                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", "random", "-noprint")
-            else
-                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-namecolor", 
-                    nameColorButton.color.r/255, nameColorButton.color.g/255, nameColorButton.color.b/255, "-noprint")
+    charProperties.nameColor = nameColorButton
+    charProperties.nameColorRandom = nameColorRandom
+
+    -- SEX
+    local sexField = createOptionToggleField("Sex: ", "M", "F")
+    charProperties:AddItem(sexField)
+
+    local mSexButton = sexField.option1Button
+    mSexButton.OnClick = function()
+        RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-sex", "male", "-noprint")
+    end
+
+    local fSexButton = sexField.option2Button
+    fSexButton.OnClick = function()
+        RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-sex", "female", "-noprint")
+    end
+
+    charProperties.sexMale = mSexButton
+    charProperties.sexFemale = fSexButton
+
+    -- PLAYERMODEL
+    local pmField = createButtonField("Playermodel: ")
+    charProperties:AddItem(pmField)
+
+    local pmFieldButton = pmField.button
+    pmFieldButton.DoClick = function()
+        local pmMenuWindow = vgui.Create("DPanel")
+        pmMenuWindow:SetSize(528, 384)
+        pmMenuWindow:MakePopup()
+
+        local mx, my = input.GetCursorPos()
+        mx = math.Clamp(mx, 0, ScrW() - pmMenuWindow:GetWide())
+        my = math.Clamp(my, 0, ScrH() - pmMenuWindow:GetTall())
+        pmMenuWindow:SetPos(mx, my)
+
+        pmMenuWindow.OnFocusChanged = function(focus)
+            -- Again don't count on this
+            if focus:HasFocus() then
+                pmMenuWindow:Remove()
             end
         end
 
-        charProperties.nameColor = nameColorButton
-        charProperties.nameColorRandom = nameColorRandom
+        local pmMenu = pmMenuWindow:Add("DScrollPanel")
+        pmMenu:Dock(FILL)
 
-        -- SEX
-        local sexField = createOptionToggleField("Sex: ", "M", "F")
-        charProperties:AddItem(sexField)
+        local pmMenuLayout = pmMenu:Add("DIconLayout")
+        pmMenuLayout:Dock(FILL)
+        pmMenuLayout:SetSpaceX(0)
+        pmMenuLayout:SetSpaceY(0)
 
-        local mSexButton = sexField.option1Button
-        mSexButton.OnClick = function()
-            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-sex", "male", "-noprint")
-        end
-
-        local fSexButton = sexField.option2Button
-        fSexButton.OnClick = function()
-            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-sex", "female", "-noprint")
-        end
-
-        charProperties.sexMale = mSexButton
-        charProperties.sexFemale = fSexButton
-
-        -- PLAYERMODEL
-        local pmField = createButtonField("Playermodel: ")
-        charProperties:AddItem(pmField)
-
-        local pmFieldButton = pmField.button
-        pmFieldButton.DoClick = function()
-            local pmMenuWindow = vgui.Create("DPanel")
-            pmMenuWindow:SetSize(528, 384)
-            pmMenuWindow:MakePopup()
-
-            local mx, my = input.GetCursorPos()
-            mx = math.Clamp(mx, 0, ScrW() - pmMenuWindow:GetWide())
-            my = math.Clamp(my, 0, ScrH() - pmMenuWindow:GetTall())
-            pmMenuWindow:SetPos(mx, my)
-
-            pmMenuWindow.OnFocusChanged = function(focus)
-                -- Again don't count on this
-                if focus:HasFocus() then
-                    pmMenuWindow:Remove()
-                end
-            end
-
-            local pmMenu = pmMenuWindow:Add("DScrollPanel")
-            pmMenu:Dock(FILL)
-
-            local pmMenuLayout = pmMenu:Add("DIconLayout")
-            pmMenuLayout:Dock(FILL)
-            pmMenuLayout:SetSpaceX(0)
-            pmMenuLayout:SetSpaceY(0)
-
-            local pmList = player_manager.AllValidModels()
-            for name, model in SortedPairs(pmList) do
-                local btn = pmMenuLayout:Add("SpawnIcon")
-                btn:SetSize(64, 64)
-                btn:SetModel(model)
-                btn.DoClick = function()
-                    RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm", name, "-noprint")
-                    pmMenuWindow:Remove()
-                end
+        local pmList = player_manager.AllValidModels()
+        for name, model in SortedPairs(pmList) do
+            local btn = pmMenuLayout:Add("SpawnIcon")
+            btn:SetSize(64, 64)
+            btn:SetModel(model)
+            btn.DoClick = function()
+                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm", name, "-noprint")
+                pmMenuWindow:Remove()
             end
         end
+    end
 
-        charProperties.playermodel = pmFieldButton
+    charProperties.playermodel = pmFieldButton
 
-        -- PLAYERMODEL COLOR
-        local pmColorField = createColorField("Playermodel color: ")
-        charProperties:AddItem(pmColorField)
+    -- PLAYERMODEL COLOR
+    local pmColorField = createColorField("Playermodel color: ")
+    charProperties:AddItem(pmColorField)
 
-        local pmColorButton = pmColorField.colorButton
-        local pmColorRandom = pmColorField.randomCheckbox
+    local pmColorButton = pmColorField.colorButton
+    local pmColorRandom = pmColorField.randomCheckbox
 
-        pmColorButton:SetText("")
+    pmColorButton:SetText("")
 
-        pmColorButton.OnColorWindowValueChanged = function(c)
-            charProperties.pmColor.color = c
-            panel.charModel:GetEntity().playerColor = Vector(c.r/255, c.g/255, c.b/255)
-        end
+    pmColorButton.OnColorWindowValueChanged = function(c)
+        charProperties.pmColor.color = c
+        panel.charModel:GetEntity().playerColor = Vector(c.r/255, c.g/255, c.b/255)
+    end
 
-        pmColorButton.OnColorWindowFocusChanged = function(focus)
+    pmColorButton.OnColorWindowFocusChanged = function(focus)
+        RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", 
+            pmColorButton.color.r/255, pmColorButton.color.g/255, pmColorButton.color.b/255, "-noprint")
+    end
+
+    pmColorRandom.OnChange = function()
+        pmColorButton:SetEnabled(!pmColorRandom:GetChecked())
+
+        if pmColorRandom:GetChecked() then
+            RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", "random", "-noprint")
+        else
             RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", 
                 pmColorButton.color.r/255, pmColorButton.color.g/255, pmColorButton.color.b/255, "-noprint")
         end
-
-        pmColorRandom.OnChange = function()
-            pmColorButton:SetEnabled(!pmColorRandom:GetChecked())
-
-            if pmColorRandom:GetChecked() then
-                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", "random", "-noprint")
-            else
-                RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex, "-pm-color", 
-                    pmColorButton.color.r/255, pmColorButton.color.g/255, pmColorButton.color.b/255, "-noprint")
-            end
-        end
-
-        charProperties.pmColor = pmColorButton
-        charProperties.pmColorRandom = pmColorRandom
-
-        -- BODYGROUPS
-        local bodygroupHBarWrapper = vgui.Create("DPanel")
-        bodygroupHBarWrapper:SetBackgroundColor(Color(0, 0, 0, 0))
-        bodygroupHBarWrapper:SetTall(20)
-        bodygroupHBarWrapper:Dock(TOP)
-        bodygroupHBarWrapper:DockPadding(2, 10, 2, 9)
-        charProperties:AddItem(bodygroupHBarWrapper)
-
-        local bodygroupHBar = bodygroupHBarWrapper:Add("DPanel")
-        bodygroupHBar:SetBackgroundColor(Color(209, 209, 209, 255))
-        bodygroupHBar:Dock(FILL)
-
-        local bodygroupLabel = vgui.Create("DLabel")
-        bodygroupLabel:SetText("Bodygroups: ")
-        bodygroupLabel:SetDark(true)
-        bodygroupLabel:Dock(TOP)
-        charProperties:AddItem(bodygroupLabel)
-
-        local bodygroups = charProperties:Add("DSizeToContents")
-        bodygroups:DockMargin(0, 4, 0, 4)
-        bodygroups:Dock(TOP)
-        
-        charProperties.bodygroups = bodygroups
-        charProperties.bodygroupContainers = {}
-
-        for i = 1, 10 do
-            local name = "Bodygroup "..i
-            local bgField = createSliderField(name, 0, 4)
-            bgField:SetParent(bodygroups)
-
-            local bgSlider = bgField.slider
-            charProperties.bodygroups[name] = bgSlider
-            charProperties.bodygroupContainers[name] = bgField
-        end
-
-        -- DELETE BUTTON
-        local deleteButton = charProperties:Add("DButton")
-        deleteButton:SetText("Delete character")
-        deleteButton:Dock(TOP)
-        charProperties.delete = deleteButton
     end
+
+    charProperties.pmColor = pmColorButton
+    charProperties.pmColorRandom = pmColorRandom
+
+    -- BODYGROUPS
+    local bodygroupHBarWrapper = vgui.Create("DPanel")
+    bodygroupHBarWrapper:SetBackgroundColor(Color(0, 0, 0, 0))
+    bodygroupHBarWrapper:SetTall(20)
+    bodygroupHBarWrapper:Dock(TOP)
+    bodygroupHBarWrapper:DockPadding(2, 10, 2, 9)
+    charProperties:AddItem(bodygroupHBarWrapper)
+
+    local bodygroupHBar = bodygroupHBarWrapper:Add("DPanel")
+    bodygroupHBar:SetBackgroundColor(Color(209, 209, 209, 255))
+    bodygroupHBar:Dock(FILL)
+
+    local bodygroupLabel = vgui.Create("DLabel")
+    bodygroupLabel:SetText("Bodygroups: ")
+    bodygroupLabel:SetDark(true)
+    bodygroupLabel:Dock(TOP)
+    charProperties:AddItem(bodygroupLabel)
+
+    local bodygroups = charProperties:Add("DSizeToContents")
+    bodygroups:DockMargin(0, 4, 0, 4)
+    bodygroups:Dock(TOP)
+    
+    charProperties.bodygroups = bodygroups
+    charProperties.bodygroupContainers = {}
+
+    for i = 1, 10 do
+        local name = "Bodygroup "..i
+        local bgField = createSliderField(name, 0, 4)
+        bgField:SetParent(bodygroups)
+
+        local bgSlider = bgField.slider
+        charProperties.bodygroups[name] = bgSlider
+        charProperties.bodygroupContainers[name] = bgField
+    end
+
+    -- DELETE BUTTON
+    local deleteButton = charProperties:Add("DButton")
+    deleteButton:SetText("Delete character")
+    deleteButton:Dock(TOP)
+    charProperties.delete = deleteButton
 end)
