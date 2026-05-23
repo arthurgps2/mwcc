@@ -439,13 +439,30 @@ concommand.Add("mwcc_char_panel", function(ply)
         -- CHARACTER SELECT
         ----------------------------------
         local charPickWrapper = panel:Add("DPanel")
-        charPickWrapper:SetWide(80)
+        charPickWrapper:SetWide(64)
         charPickWrapper:Dock(LEFT)
 
         local charPick = charPickWrapper:Add("DScrollPanel")
-        charPick:SetWide(64)
+        charPick:SetWide(79)
         charPick:Dock(LEFT)
         charPick.justAddedChar = false
+
+        charPick.pnlCanvas:SetWide(64)
+        charPick.pnlCanvas:Dock(LEFT)
+        charPick.pnlCanvas.PerformLayout = function(pnl)
+            charPick:PerformLayoutInternal()
+
+            charPick.pnlCanvas:SetWide(64)
+            charPick:Rebuild()
+
+            if charPick:GetVBar().Enabled then
+                charPickWrapper:SetWide(79)
+            else
+                charPickWrapper:SetWide(64)
+            end
+
+            charPick:InvalidateParent()
+        end
 
         for i = 1, 10 do
             local btn = charPick:Add("SpawnIcon")
