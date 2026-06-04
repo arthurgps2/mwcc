@@ -257,6 +257,16 @@ local function setCurrentChar(i)
                 "-pm-body", "Skin", self:GetValue(), "-noprint")
         end
 
+        skinSlider.dragging = false
+        skinSlider.Think = function(self)
+            if self:IsEditing() and !self.dragging then
+                self.dragging = true
+            elseif !self:IsEditing() and self.dragging then
+                self.dragging = false
+                self:MouseReleased(self)
+            end
+        end
+
         charModelEntity:SetSkin(skinValue)
     end
 
@@ -276,6 +286,16 @@ local function setCurrentChar(i)
         bgSlider.MouseReleased = function(self)
             RunConsoleCommand("mwcc_char_edit", "-byindex", panel.charIndex,
                 "-pm-body", bgName, self:GetValue(), "-noprint")
+        end
+
+        bgSlider.dragging = false
+        bgSlider.Think = function(self)
+            if self:IsEditing() and !self.dragging then
+                self.dragging = true
+            elseif !self:IsEditing() and self.dragging then
+                self.dragging = false
+                self:MouseReleased(self)
+            end
         end
 
         charModelEntity:SetBodygroup(i, bgValue)
