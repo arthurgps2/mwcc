@@ -212,7 +212,11 @@ local function setCurrentChar(i)
     charPickVBar:SetScroll(y)
 
     -- Model
-    panel.charModel:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
+    local model = player_manager.TranslatePlayerModel(char.pm.model)
+    if (panel.charModel:GetModel() != model) then
+        panel.charModel:SetModel(model)
+    end
+    
     local charModelEntity = panel.charModel:GetEntity()
     
     -- Name
