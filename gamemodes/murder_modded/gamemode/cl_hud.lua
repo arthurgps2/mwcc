@@ -86,7 +86,8 @@ function GM:HUDPaint()
 		else
 
 			if round == 1 then
-				if self.RoundStart && self.RoundStart + 10 > CurTime() then
+				local roundStartUnfreezeTime = GetConVar("mu_roundstart_unfreezetime"):GetFloat()
+				if self.RoundStart && self.RoundStart + roundStartUnfreezeTime > CurTime() then
 					self:DrawStartRoundInformation()
 				else
 					self:DrawGameHUD(LocalPlayer())
@@ -416,7 +417,8 @@ function GM:RenderScreenspaceEffects()
 		self:RenderDeathOverlay()
 	end
 
-	if self:GetRound() == 1 && self.RoundStart && self.RoundStart + 10 > CurTime() then
+	local roundStartUnfreezeTime = GetConVar("mu_roundstart_unfreezetime"):GetFloat()
+	if self:GetRound() == 1 && self.RoundStart && self.RoundStart + roundStartUnfreezeTime > CurTime() then
 		local sw, sh = ScrW(), ScrH()
 		surface.SetDrawColor(0,0,0,255)
 		surface.DrawRect(-1,-1,sw + 2,sh + 2)
