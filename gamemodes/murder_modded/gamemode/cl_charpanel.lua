@@ -166,7 +166,7 @@ end
 
 
 
-local function setCurrentChar(i)    
+local function setCurrentChar(i)
     panel.charIndex = i
 
     if i == 0 then
@@ -178,7 +178,6 @@ local function setCurrentChar(i)
     panel.charModel:Show()
     panel.charProperties:GetParent():Show()
 
-    -- Model
     local char = characters[i]
     if !char then
         if #characters < 1 then
@@ -189,7 +188,35 @@ local function setCurrentChar(i)
         return
     end
 
-    panel.charModel:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
+    -- Scroll to correct button
+    local charButton = panel.charPick.buttons[i]
+    local charPickCanvas = panel.charPick:GetCanvas()
+    
+    local _, buttonY = charPickCanvas:GetChildPosition(charButton)
+    local charPickVBar = panel.charPick:GetVBar()
+    local charPickVBarY = charPickVBar:GetScroll()
+
+    local h = panel.charPick:GetTall() - charButton:GetTall()
+    local ymin = charPickVBarY
+    local ymax = ymin + h
+
+    local y
+    if (buttonY < ymin) then
+        y = buttonY
+    elseif (buttonY > ymax) then
+        y = buttonY - h
+    else
+        y = charPickVBarY
+    end
+
+    charPickVBar:SetScroll(y)
+
+    -- Model
+    local model = player_manager.TranslatePlayerModel(char.pm.model)
+    if (panel.charModel:GetModel() != model) then
+        panel.charModel:SetModel(model)
+    end
+    
     local charModelEntity = panel.charModel:GetEntity()
     
     -- Name
@@ -246,7 +273,6 @@ local function setCurrentChar(i)
         local skinField = createSliderField("Skin", skinValue, charModelEntity:SkinCount() - 1)
         skinField:SetParent(panel.charProperties.bodygroups)
         panel.charProperties.bodygroupContainers.Skin = skinField
-        -- panel.charProperties.bodygroups:AddItem(skinField)
 
         local skinSlider = skinField.slider
         skinSlider.OnValueChanged = function(self, v)
@@ -303,7 +329,9 @@ local function setCurrentChar(i)
 
     -- Delete button
     panel.charProperties.delete.DoClick = function()
-        RunConsoleCommand("mwcc_char_delete", "-byindex", panel.charIndex, "-noprint")
+        local indexToDelete = panel.charIndex
+        setCurrentChar(math.max(panel.charIndex - 1, 1))
+        RunConsoleCommand("mwcc_char_delete", "-byindex", indexToDelete, "-noprint")
     end
 end
 
@@ -319,28 +347,40 @@ local function updateChars()
     end
 
     -- Update characters
+    local charPickVBar = panel.charPick:GetVBar()
+    local lastScroll = charPickVBar:GetScroll()
+
     panel.charPick:Clear()
+    panel.charPick.buttons = {}
 
     for i, char in ipairs(characters) do
         local btn = panel.charPick:Add("SpawnIcon")
+        table.insert(panel.charPick.buttons, btn)
+
         btn:SetModel(player_manager.TranslatePlayerModel(char.pm.model))
         btn:SetTooltip(char.name)
         btn:SetTooltipDelay(0)
         btn:Dock(TOP)
+        btn:InvalidateParent(true)
         btn.DoClick = function()
             setCurrentChar(i)
         end
     end
 
     local btnAdd = panel.charPick:Add("DButton")
+    table.insert(panel.charPick.buttons, btnAdd)
+
     btnAdd:Dock(TOP)
     btnAdd:SetSize(64, 64)
     btnAdd:SetText("NEW")
+    btnAdd:InvalidateParent(true)
     btnAdd.justClicked = false
     btnAdd.DoClick = function()
         panel.charPick.justAddedChar = true
         RunConsoleCommand("mwcc_char_add", "-noprint")
     end
+
+    charPickVBar:SetScroll(lastScroll)
 
     if panel.charPick.justAddedChar then
         panel.charPick.justAddedChar = false
@@ -467,6 +507,7 @@ concommand.Add("mwcc_char_panel", function(ply)
     local charPick = charPickWrapper:Add("DScrollPanel")
     charPick:SetWide(79)
     charPick:Dock(LEFT)
+    charPick.buttons = {}
     charPick.justAddedChar = false
 
     charPick.pnlCanvas:SetWide(64)
