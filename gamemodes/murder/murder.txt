@@ -162,5 +162,13 @@
 			"type"		"Numeric"
 			"default"	"4"
 		}
+
+		20
+		{
+			"name"		"mu_spectate_show_names"
+			"text"		"spectate_show_names"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
 	}
 }
