@@ -39,8 +39,8 @@ function GM:RenderSpectate()
 
 		if IsValid(self:GetCSpectatee()) && self:GetCSpectatee():IsPlayer() then
 			
-
-			if IsValid(LocalPlayer()) && LocalPlayer():IsAdmin() then
+			local spectateShowNames = GetConVar("mu_spectate_show_names"):GetBool()
+			if spectateShowNames || (IsValid(LocalPlayer()) && LocalPlayer():IsAdmin()) then
 				drawTextShadow(self:GetCSpectatee():Nick(), "MersRadialSmall", ScrW() / 2, ScrH() - 30 - h, Color(190, 190, 190), 1)
 			end
 
